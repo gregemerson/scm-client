@@ -1,0 +1,18 @@
+<ion-header>
+  <ion-navbar>
+    <ion-title>Messages</ion-title>
+  </ion-navbar>
+</ion-header>
+<ion-content padding>
+  <button ion-button (click)="onOk()" color="primary" small>
+    <ion-icon name="close"></ion-icon>
+  </button>
+  <ion-list>
+    <ion-item *ngFor="let m of messages">
+      <span [style.color]="m.type == 'Error' ? 'danger' : 'secondary'">
+        {{ m.heading }}
+      </span>
+      <p>{{ m.body }}</p>
+    </ion-item>
+  </ion-list>
+</ion-content>

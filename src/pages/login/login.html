@@ -1,0 +1,61 @@
+
+<ion-header>
+  <ion-navbar>
+    <ion-title>Log in/Sign up</ion-title>
+  </ion-navbar>
+</ion-header>
+
+<ion-content padding>
+  <ion-card>
+  <ion-card-header fancy-text>Welcome to Stick Control Metronome!</ion-card-header>
+  <ion-card-content>
+    <ion-list [hidden]="invisibilityMap['menu']">
+      <ion-item>
+        <button ion-button (click)="makeVisible('logIn')" >Log In</button>
+        <button ion-button (click)="makeVisible('createAccount')">Create Account</button>
+        <button ion-button (click)="loginGuest()">Guest Log In</button>
+      </ion-item>
+    </ion-list>
+    <ion-list [hidden]="invisibilityMap['logIn']">
+      <ion-item>
+        <ion-input (change)="onChange('old')" [(ngModel)]="email" type="email" value="" placeholder="Email"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-input (change)="onChange('old')" [(ngModel)]="password"  type="password" value="" placeholder="Password"></ion-input>
+      </ion-item>
+      <ion-item>
+        <button ion-button (click)="logIn()" color="primary"><ion-icon name="checkmark-circle"></ion-icon></button>
+        <button ion-button (click)="makeVisible('menu')" color="danger"><ion-icon name="close-circle"></ion-icon></button>
+      </ion-item>
+    </ion-list>
+    <form [formGroup]="accountGroup" [hidden]="invisibilityMap['createAccount']">
+
+      <ion-item>  
+        <ion-input formControlName="newUsername" type="text" placeholder="User Name"></ion-input>
+      </ion-item>
+      <ion-item [hidden]="!(newUsernameCtrl.hasError('usernameError') && newUsernameCtrl.touched)" color="danger">{{ newUsernameCtrl.errors?.emailError }}</ion-item>
+
+      <ion-item>
+        <ion-input formControlName="newEmail" type="email" placeholder="Email"></ion-input>
+      </ion-item>
+      <div class="error-box" [hidden]="!(newEmailCtrl.hasError('emailError') && newEmailCtrl.touched)" color="danger">{{ newEmailCtrl.errors?.emailError }}</div>
+      
+      <ion-item>
+        <ion-input formControlName="newPassword1" type="password" placeholder="Password"></ion-input>
+      </ion-item>
+      <ion-item [hidden]="!(newPassword1Ctrl.hasError('passwordError') && newPassword1Ctrl.touched)" color="danger">{{ newPassword1Ctrl.errors?.emailError }}</ion-item>
+
+      <ion-item>
+        <ion-input (change)="onPasswordChange()" formControlName="newPassword2"  type="password" placeholder="Re-enter password"></ion-input>
+      </ion-item>
+      <ion-item [class.error-box]="newPassword2Ctrl.hasError('error') || passwordMismatch" [hidden]="!newPassword2Ctrl.hasError('error')">Passwords do not match</ion-item>
+      
+      <ion-item>
+        <button ion-button type="submit" (click)="createAccount()" color="primary"><ion-icon name="checkmark-circle"></ion-icon></button>
+        <button ion-button (click)="makeVisible('menu')" color="danger"><ion-icon name="close-circle"></ion-icon></button>
+      </ion-item>
+    </form>
+    <ion-item color="danger" [hidden]="!errorMessage">{{ errorMessage }}</ion-item>
+    </ion-card-content>
+  </ion-card>
+</ion-content>
