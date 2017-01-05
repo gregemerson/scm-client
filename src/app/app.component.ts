@@ -5,7 +5,7 @@ import {TabsPage} from '../pages/tabs/tabs';
 import {ResourceLibrary} from '../providers/resource-library/resource-library';
 import {Authenticator, IAuthUser} from '../providers/authenticator/authenticator';
 import {ExerciseSets} from '../providers/exercise-sets/exercise-sets';
-//import {LoginPage} from '../pages/login/login';
+import {LoginPage} from '../pages/login/login';
 import {MessagesPage, IMessage, MessageType} from '../pages/messages/messages';
 import {BaseObservableSubscription} from "../utilities/base-observable";
 import {HttpService, HttpServiceError, HttpServiceErrors} from '../providers/http-service/http-service';
@@ -84,14 +84,12 @@ export class StickControlMetronome {
 
   private displayLogInPage() {
     console.log('need to login');
-    /*
     this.modalController.
       create(LoginPage,{
         authenticator: this.authenticator
       }, {
         enableBackdropDismiss: false
       }).present();
-      */
   }
 
   private unloadUserData(): void {

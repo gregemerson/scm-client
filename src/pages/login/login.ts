@@ -3,7 +3,6 @@ import {NavController, NavParams, ViewController} from 'ionic-angular';
 import {Authenticator, IAuthUser} from '../../providers/authenticator/authenticator';
 import {Validators, FormBuilder, FormGroup, FormControl} from '@angular/forms';
 import {ScmValidators} from '../../utilities/scm-validators';
-//import {Observer} from "rxjs";
 
 interface InvisibilityMap {
   menu: boolean,
@@ -18,9 +17,7 @@ interface InvisibilityMap {
 export class LoginPage {
   errorMessage: string = null;
   constraints = new ScmValidators();
-
   accountGroup: FormGroup;
-
   errorFontEm = .8;
 
   // Current accounts
@@ -55,7 +52,8 @@ export class LoginPage {
     this.newUsernameCtrl = new FormControl('', [Validators.required, ScmValidators.userName]);
     this.newEmailCtrl = new FormControl('', [Validators.required, ScmValidators.email]);
     this.newPassword1Ctrl = new FormControl('', [Validators.required, ScmValidators.password]);
-    this.newPassword2Ctrl = new FormControl('', [Validators.required, ScmValidators.password]);
+    this.newPassword2Ctrl = new FormControl('', [Validators.required, 
+      ScmValidators.verificaton(this.newPassword1Ctrl)]);
   
     this.accountGroup = this.formBuilder.group({
       newUsername: this.newUsernameCtrl,
@@ -65,22 +63,12 @@ export class LoginPage {
     });
   }
 
-  onEmailChange() {
-    console.dir(this.newEmailCtrl.errors);
-  }
-
   errorOn(message: string) {
     this.errorMessage = message;
   }
 
   errorOff() {
     this.errorMessage = null;
-  }
-
-  onPasswordChange() {
-    let p1 = this.newPassword1Ctrl.value;
-    let p2 = this.newPassword2Ctrl.value;
-    this.passwordMismatch = (p1 && p2 && p1 != p2);
   }
 
   makeVisible(controlGroup: string) {
@@ -102,8 +90,7 @@ export class LoginPage {
     this.authenticator.login(this.email, this.password)
     .subscribe(
       () => {
-        //this.viewCtrl.dismiss();
-      }, 
+        this.navCtrl.pop();      }, 
       (err: any) => {
         if (isDevMode()) {
           console.dir(err);
@@ -135,7 +122,7 @@ export class LoginPage {
   loginGuest() {
     this.authenticator.loginGuest().subscribe(
       next => {
-        //this.viewCtrl.dismiss();
+          this.navCtrl.pop();
       }, 
       err => {
         if (isDevMode()) {

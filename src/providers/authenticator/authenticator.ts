@@ -7,16 +7,14 @@ import {Observer, Subscriber, Subscription} from "rxjs";
 import {ErrorObservable} from 'rxjs/observable/ErrorObservable';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/observable/throw';
+import 'rxjs/add/observable/of';
 import {BaseObservable} from '../../utilities/base-observable';
+import {Config} from '../../utilities/config';
 
 @Injectable()
 export class Authenticator extends BaseObservable<IAuthUser> {
   private static tokenKey = 'auth_token';
   private static uidKey = 'uid';
-  private guestToken = 'MCLXGi20lLDTXRBTWkiz7sbQXRx5qk8IPEcwTFBhlYPTDfG0WZDDAhjYHDuIaBEX';
-  private guestEmail = 'guest@guest.com';
-  private guestPassword = 'guest';
-  private guestUid = '57d5a393b1ba1b20289231e0';
   private userLoadFilter = '?filter[include]=userSettings&filter[include]=exerciseSets';
   private _user: IAuthUser = null;
   errors: Object;
@@ -49,25 +47,35 @@ export class Authenticator extends BaseObservable<IAuthUser> {
   }
 
   private set token(token: string ) {
-    localStorage.setItem(Authenticator.tokenKey, token);
+    if (token == null) {
+      localStorage.removeItem(Authenticator.tokenKey);
+    }
+    else {
+      localStorage.setItem(Authenticator.tokenKey, token);
+    }
   }
 
-    private get uid(): number {
-      let id = localStorage.getItem(Authenticator.uidKey);
-      if (id != null) {
-        return parseInt(id);
-      }
-      return null;
+  private get uid(): number {
+    let id = localStorage.getItem(Authenticator.uidKey);
+    if (id != null) {
+      return parseInt(id);
+    }
+    return null;
   }
 
-  private set uid(token: number) {
-    localStorage.setItem(Authenticator.uidKey, token.toString());
+  private set uid(id: number) {
+    if (id == null) {
+      localStorage.removeItem(Authenticator.uidKey);
+    }
+    else {
+      localStorage.setItem(Authenticator.uidKey, id.toString());
+    }
   }
 
   private unsetUser() {
     this._user = null;
-    localStorage.removeItem(Authenticator.tokenKey);
-    localStorage.removeItem(Authenticator.uidKey);
+    this.token = null;
+    this.uid = null;
     for (let subscriberId in this.subscribers) {
       this.subscribers[subscriberId].next(null);
     }
@@ -83,7 +91,6 @@ export class Authenticator extends BaseObservable<IAuthUser> {
   }
 
   createUser(email: string, password: string, username: string): Observable<Object> {
-    console.log('create user using ' + HttpService.newUser);
     return this.httpService.postPersistedObject(HttpService.newUser, {
       username: username,
       password: password,
@@ -92,36 +99,30 @@ export class Authenticator extends BaseObservable<IAuthUser> {
   }
 
   loginGuest(): Observable<void> {
-    localStorage.setItem(Authenticator.tokenKey, this.guestToken);
-    localStorage.setItem(Authenticator.uidKey, this.guestUid);
+    this.token = Config.guestToken;
+    this.uid = Config.guestUid;
     return this.loadUser();
   }
 
   login(email: String, password: String): Observable<void> {
-    this.token = '';
-    return this.http.post('/api/Clients/login', JSON.stringify({
+    return this.httpService.postPersistedObject(HttpService.ClientLogin, {
       email: email,
       password: password
-    }), Authenticator.newRequestOptions())
-    .map((response : Response) => {
-      let data = this.handleErrors(response);
-      this.token = data['id'];
-      this.uid = data['userId'];
-      return data['userId'];
-    }).flatMap((id: number, index: number) => {
+    }).flatMap((loginData: Object, index: number) => {
+      this.token = loginData['id'];
+      this.uid = loginData['userId'];
       return this.loadUser();
-    })
+    });
   }
 
-
   loadUser(): Observable<void> {
-    return this.http.get('/api/Clients/' + localStorage.getItem(
-      Authenticator.uidKey) + this.userLoadFilter,
-      Authenticator.newRequestOptions())
-    .map((response : Response) => {
-      let user= this.handleErrors(response);
-      this.setUser(new AuthUser(user));
-    });
+    let url = HttpService.ClientsCollection + localStorage.getItem(
+      Authenticator.uidKey) + this.userLoadFilter;
+    return this.httpService.getPersistedObject(url).
+      flatMap((user: Object, index: number) => {
+        this.setUser(new AuthUser(user));
+        return Observable.of(null);
+      });
   }
 
   private handleError (error: any) {
@@ -166,6 +167,9 @@ export class Authenticator extends BaseObservable<IAuthUser> {
   logout(): Observable<Object> {
     let options = Authenticator.newRequestOptions();
     this.unsetUser();
+    if (this.uid == Config.guestUid) {
+      return Observable.of({});
+    } 
     return this.httpService.postPersistedObject(HttpService.logout(), {}, options)
     .map((res : any) => {
       return res;

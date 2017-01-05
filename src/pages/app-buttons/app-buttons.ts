@@ -10,7 +10,8 @@ import {HomePage} from '../home/home'
 export class AppButtons {
 
   constructor(public navCtrl: NavController, 
-    private authenticator: Authenticator) {}
+    private authenticator: Authenticator) {
+  }
 
   logout() {
     this.authenticator.logout().subscribe({

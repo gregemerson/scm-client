@@ -9,32 +9,19 @@ export class ScmValidators {
   readonly maxPasswordLength = 12;
 
   static email(ctrl: AbstractControl): Object {
-    let validation = null;
     const regex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
-    let emptyHandled = {};
-
     if (ctrl.value.length == 0) {
-      return null;
+      return {error: 'Email address is required'}
     }
-    else if (ctrl.value.length > 254) {
-      validation = {emailError: 'Email address too long'}
+    if (ctrl.value.length > 254) {
+      return {error: 'Email address too long'}
     }
-    else {
-      validation = regex.test(ctrl.value) ? null : {emailError: 'Invalid email address'};
-    }
-    return validation;
+    return regex.test(ctrl.value) ? null : {error: 'Invalid email address'};
   }
 
   static userName(ctrl: AbstractControl): Object {
-    let emptyHandled = {};
-    if (ScmValidators.checkForEmptyVaue(ctrl, emptyHandled)) {
-      return emptyHandled['validation'];
-    }
-    if (ctrl.value == null) {
-      return {error: 'User name not set'};
-    }
     if (ctrl.value.length == 0) {
-      return null;
+      return {error: 'User name is required'}
     }
     const regex = /^[a-z0-9]+$/i;
     let lengthError = ScmValidators.minMaxLengths('User name', ctrl.value, 5, 20);
@@ -48,22 +35,27 @@ export class ScmValidators {
   }
 
   static password(ctrl: AbstractControl): Object {
-    let emptyHandled = {};
-    if (ScmValidators.checkForEmptyVaue(ctrl, emptyHandled)) {
-      return emptyHandled['validation'];
+    if (ctrl.value.length == 0) {
+      return {error: 'Password is required'}
     }
     const regex = /^[a-z0-9!@#$%^&*]+$/i;
-    let lengthError = ScmValidators.minMaxLengths('User name', ctrl.value, 8, 12);
+    let lengthError = ScmValidators.minMaxLengths('Password', ctrl.value, 8, 12);
     if (lengthError) {
       return lengthError;
     }
     if (!regex.test(ctrl.value)) {
-      return {error: 'User name can only contain numerals, letters, !, @, #, $, %, ^, & or *'};
+      return {error: 'Password can only contain numerals, letters, !, @, #, $, %, ^, & or *'};
     }
     return null;
   }
 
-  private static checkForEmptyVaue(ctrl: AbstractControl, emptyHandled: Object): boolean {
+  static verificaton(otherCtrl: AbstractControl) : (ctrl: AbstractControl) => Object {
+    return (ctrl: AbstractControl) => {
+      return otherCtrl.value == ctrl.value ? null : {error: "Values don't match"};
+    }
+  }
+
+  private static checkForEmptyValue(ctrl: AbstractControl, emptyHandled: Object): boolean {
     if (!ctrl.value) {
       emptyHandled['validation'] = {error: 'Value not set'};
     }

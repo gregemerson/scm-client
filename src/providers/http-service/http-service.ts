@@ -1,6 +1,7 @@
 import {Injectable} from '@angular/core';
 import {Http, RequestOptionsArgs, Response} from '@angular/http';
 import {Authenticator} from '../authenticator/authenticator';
+import {Config} from '../../utilities/config'
 import {Observable} from 'rxjs/Observable';
 import {ErrorObservable} from 'rxjs/observable/ErrorObservable';
 import {Observer, Subscriber, Subscription} from 'rxjs';
@@ -10,39 +11,40 @@ export type HttpServiceErrors = Array<HttpServiceError>;
 
 @Injectable()
 export class HttpService extends Observable<HttpServiceErrors> {
-  static get ClientsCollection(): string {return '/api/Clients/'}
-  static get newUser(): string {return '/api/Clients/createNewUser'}
-  static get ExerciseSetCollection(): string {return '/api/ExerciseSets/';}
-  static get ExerciseCollection(): string {return '/api/Exercises/';}
+  static get ClientsCollection(): string {return this.addRoot('Clients/')}
+  static get ClientLogin(): string {return this.addRoot('Clients/login')}
+  static get newUser(): string {return this.addRoot('Clients/createNewUser')}
+  static get ExerciseSetCollection(): string {return this.addRoot('ExerciseSets/');}
+  static get ExerciseCollection(): string {return this.addRoot('Exercises/');}
   static exerciseSetExercises(exerciseSetId: number): string {
-    return '/api/ExerciseSets/' + exerciseSetId.toString() + '/exercises';
+    return this.addRoot('ExerciseSets/' + exerciseSetId.toString() + '/exercises');
   }
   static createdExercises(exerciseSetId: number): string {
-    return '/api/ExerciseSets/' + exerciseSetId.toString() + '/createdExercises';
+    return this.addRoot('ExerciseSets/' + exerciseSetId.toString() + '/createdExercises');
   }
   static exercise(exerciseId: number): string {
-    return '/api/Exercises/' + exerciseId.toString();
+    return this.addRoot('Exercises/' + exerciseId.toString());
   }
   static userSettings(userId: number): string {
-    return 'api/Clients/' + userId.toString() + '/userSettings';
+    return this.addRoot('Clients/' + userId.toString() + '/userSettings');
   }
   static exerciseSetExercise(exerciseSetId: number, exerciseId: number): string {
-    return 'api/ExerciseSets/' + exerciseSetId.toString() + '/exercises/' + exerciseId.toString();
+    return this.addRoot('ExerciseSets/' + exerciseSetId.toString() + '/exercises/' + exerciseId.toString());
   }
   static clientExerciseSets(clientId: number): string {
-    return 'api/Clients/' + clientId.toString() + '/exerciseSets';
+    return this.addRoot('Clients/' + clientId.toString() + '/exerciseSets');
   }
   static clientExerciseSet(clientId: number, exerciseSetId: number): string {
-    return 'api/Clients/' + clientId.toString() + '/exerciseSets/' + exerciseSetId;
+    return this.addRoot('Clients/' + clientId.toString() + '/exerciseSets/' + exerciseSetId);
   }
   static logout(): string {
-    return 'api/Clients/logout';
+    return this.addRoot('Clients/logout');
   }
   static removeExerciseSet(clientId: number, exerciseSetId: number): string {
-    return 'api/Clients/' + clientId.toString() + '/exerciseSets/rel/' + exerciseSetId;
+    return this.addRoot('Clients/' + clientId.toString() + '/exerciseSets/rel/' + exerciseSetId);
   }
   static shareExerciseSet(clientId: number): string {
-    return 'api/Clients/' + clientId.toString() + '/sharedExerciseSets';
+    return this.addRoot('Clients/' + clientId.toString() + '/sharedExerciseSets');
   }
 
   private subscribers: {[key: string]: Subscriber<HttpServiceErrors>} = {};
@@ -59,6 +61,10 @@ export class HttpService extends Observable<HttpServiceErrors> {
         delete this.subscribers[key];
       });
     });
+  }
+
+  private static addRoot(relUrl: string): string {
+    return Config.apiRoot + relUrl;
   }
 
   postPersistedObject(url: string,  data: any, requestOptions = Authenticator.newRequestOptions()): Observable<Object> {

@@ -33,22 +33,22 @@
       <ion-item>  
         <ion-input formControlName="newUsername" type="text" placeholder="User Name"></ion-input>
       </ion-item>
-      <ion-item [hidden]="!(newUsernameCtrl.hasError('usernameError') && newUsernameCtrl.touched)" color="danger">{{ newUsernameCtrl.errors?.emailError }}</ion-item>
+      <ion-item class="error-box" [hidden]="!(newUsernameCtrl.hasError('error') && newUsernameCtrl.touched)">{{ newUsernameCtrl.errors?.error }}</ion-item>
 
       <ion-item>
         <ion-input formControlName="newEmail" type="email" placeholder="Email"></ion-input>
       </ion-item>
-      <div class="error-box" [hidden]="!(newEmailCtrl.hasError('emailError') && newEmailCtrl.touched)" color="danger">{{ newEmailCtrl.errors?.emailError }}</div>
+      <ion-item class="error-box" [hidden]="!(newEmailCtrl.hasError('error') && newEmailCtrl.touched)">{{ newEmailCtrl.errors?.error }}</ion-item>
       
       <ion-item>
         <ion-input formControlName="newPassword1" type="password" placeholder="Password"></ion-input>
       </ion-item>
-      <ion-item [hidden]="!(newPassword1Ctrl.hasError('passwordError') && newPassword1Ctrl.touched)" color="danger">{{ newPassword1Ctrl.errors?.emailError }}</ion-item>
+      <ion-item class="error-box" [hidden]="!(newPassword1Ctrl.hasError('error') && newPassword1Ctrl.touched)">{{ newPassword1Ctrl.errors?.error }}</ion-item>
 
       <ion-item>
         <ion-input (change)="onPasswordChange()" formControlName="newPassword2"  type="password" placeholder="Re-enter password"></ion-input>
       </ion-item>
-      <ion-item [class.error-box]="newPassword2Ctrl.hasError('error') || passwordMismatch" [hidden]="!newPassword2Ctrl.hasError('error')">Passwords do not match</ion-item>
+      <ion-item class="error-box" [hidden]="!(newPassword2Ctrl.hasError('error') && newPassword2Ctrl.touched)">{{ newPassword2Ctrl.errors?.error }}</ion-item>
       
       <ion-item>
         <button ion-button type="submit" (click)="createAccount()" color="primary"><ion-icon name="checkmark-circle"></ion-icon></button>
