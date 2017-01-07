@@ -15,7 +15,7 @@ import {Config} from '../../utilities/config';
 export class Authenticator extends BaseObservable<IAuthUser> {
   private static tokenKey = 'auth_token';
   private static uidKey = 'uid';
-  private userLoadFilter = '?filter[include]=userSettings&filter[include]=exerciseSets';
+  private userLoadFilter = '?filter[include]=userSettings&filter[include]=exerciseSets&filter[include]=subscription';
   private _user: IAuthUser = null;
   errors: Object;
 
@@ -166,8 +166,9 @@ export class Authenticator extends BaseObservable<IAuthUser> {
 
   logout(): Observable<Object> {
     let options = Authenticator.newRequestOptions();
+    let uid = this.uid;
     this.unsetUser();
-    if (this.uid == Config.guestUid) {
+    if (uid == Config.guestUid) {
       return Observable.of({});
     } 
     return this.httpService.postPersistedObject(HttpService.logout(), {}, options)
@@ -210,6 +211,7 @@ export interface IAuthUser {
   email: string;
   emailVerified: boolean;
   rawExerciseSets: Array<Object>;
+  subscription: Object;
 }
 
 class AuthUser implements IAuthUser {
@@ -220,12 +222,14 @@ class AuthUser implements IAuthUser {
   email: string;
   emailVerified: boolean;
   rawExerciseSets: Array<Object>;
+  subscription: Object;
   
   constructor(rawUser: Object) {
     Object.assign(this, rawUser);
     this.settings = new AuthUserSettings(rawUser['userSettings']);
     this.membershipEnds = new Date(rawUser['membershipExpiry']);
     this.rawExerciseSets = rawUser['exerciseSets'];
+    this.subscription = rawUser['subscription'];
   }
 }
 

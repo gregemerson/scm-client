@@ -11,6 +11,7 @@ import 'rxjs/add/observable/throw';
 @Injectable()
 export class ExerciseSets {
   currentExerciseSet: IExerciseSet;
+  remainingExerciseSetCount: number;
   private user: IAuthUser;
   items: Array<IExerciseSet>;
   
@@ -28,8 +29,10 @@ export class ExerciseSets {
     this.items = [];
     this.currentExerciseSet = null;
     let currentId = user.settings.currentExerciseSet;
+    let numberPrivateExerciseSets = 0;
     for (let key in user.rawExerciseSets) {
       let isOwner = user.rawExerciseSets[key]['ownerId'] == user.id;
+      numberPrivateExerciseSets += user.rawExerciseSets[key]['public'] ? 0 : 1;
       let newSet = new ExerciseSet(this.httpService, user,
         user.rawExerciseSets[key], isOwner);
       this.items.push(newSet);
@@ -37,6 +40,8 @@ export class ExerciseSets {
         this.currentExerciseSet = newSet;
       }
     }
+    this.remainingExerciseSetCount = user.
+      subscription['maxExerciseSets'] - numberPrivateExerciseSets;
     if (this.currentExerciseSet == null) {
       return Observable.create(observer => observer.next());
     }
@@ -52,6 +57,7 @@ export class ExerciseSets {
       .map(result => {
         let newSet = new ExerciseSet(this.httpService, this.user, result, true);
         this.items.push(newSet);
+        this.remainingExerciseSetCount--;
         return newSet.id;
       });
   }
@@ -73,8 +79,18 @@ export class ExerciseSets {
     return this.httpService.deletePersistedObject(
         HttpService.removeExerciseSet(this.user.id, this.currentExerciseSet.id))
         .map(result => {
-          // need to slice out removed set then set current set to a random 
-          // one if it exists....see server comments
+          this.remainingExerciseSetCount++;
+          let indexToDelete: number;
+          for (let index = 0; index < this.items.length; index++) {
+            if (this.currentExerciseSet.id == this.items[index].id) {
+              this.items = this.items.splice(index, 1);
+              this.currentExerciseSet = null;
+              if (this.items.length > 0) {
+                this.setCurrentExerciseSet(this.items[0].id);
+              }
+              break;
+            }
+          }
         });
   }
   
