@@ -1,6 +1,7 @@
 import {SimpleChanges, ChangeDetectorRef, Component, ViewChildren, ViewChild, ElementRef, QueryList, EventEmitter} from '@angular/core';
 import {NavController, NavParams, LoadingController, Loading, ModalController, PopoverController, Content, ToastController} from 'ionic-angular';
 import * as ES from '../../providers/exercise-sets/exercise-sets';
+import {Authenticator} from '../../providers/authenticator/authenticator'
 import {ExerciseDisplay} from '../exercise-display/exercise-display';
 import {MessagesPage, MessageType, IMessage} from '../messages/messages';
 import {NewExerciseSetForm} from './new-exercise-set';
@@ -24,13 +25,11 @@ export class ExerciseSetPreviewPage {
   title = '';
   constraints = new ExerciseConstraints();
   exercises: Array<ES.IExercise> = [];
-  selectedExerciseSet: ES.IExerciseSet = null;
+  exerciseSet: ES.IExerciseSet = null;
   editor: ExerciseEditor = null;
   editing = false;
   editIndex: number = null;
-  exerciseSetName: string;
   exerciseSetDetails: string;
-  isOwner: boolean;
   @ViewChild(Content) content: Content;
   @ViewChildren(ExerciseDisplay) displays: QueryList<ExerciseDisplay>;
   @ViewChildren('displayContainer') contents: QueryList<ElementRef>;
@@ -39,6 +38,7 @@ export class ExerciseSetPreviewPage {
 
   constructor(private navCtrl: NavController, 
     public exerciseSets: ES.ExerciseSets,
+    public authenticator: Authenticator,
     private params: NavParams,
     private loadingCtrl: LoadingController,
     private modalCtrl: ModalController,
@@ -55,25 +55,16 @@ export class ExerciseSetPreviewPage {
     }
   }
 
-  private get currentExerciseSetId(): number {
-    return this.exerciseSets.currentExerciseSet ? 
-      this.exerciseSets.currentExerciseSet.id : null;
-  }
-
   private empty(s: string) {
     return (!s && s.length == 0);
   }
 
   private formatExerciseSetDetails() {
-    if (!this.exerciseSets.currentExerciseSet) {
-      this.isOwner = false;
-      this.exerciseSetDetails = null;
-      this.exerciseSetName = null;
+    if (!this.exerciseSet) {
+      this.exerciseSetDetails = '';
       return;
     }
-    this.isOwner = this.exerciseSets.currentExerciseSet.isOwner;
-    this.exerciseSetName = this.exerciseSets.currentExerciseSet.name;
-    let set = this.exerciseSets.currentExerciseSet;
+    let set = this.exerciseSet;
     let category = (this.empty(set.category)) ? '' : ' (category: ' + set.category + ')';
     let comments = (this.empty(set.comments)) ? '' : set.comments;
     this.exerciseSetDetails = comments + category;
@@ -85,7 +76,7 @@ export class ExerciseSetPreviewPage {
         onSelect: (id: number) => {
           this.changeCurrentExerciseSet(id);
         },
-        currentSelectionId: this.currentExerciseSetId,
+        currentSelectionId: this.exerciseSet ? this.exerciseSet.id : null,
         exerciseSets: this.exerciseSets.items
       }).present();
   }
@@ -108,9 +99,9 @@ export class ExerciseSetPreviewPage {
           });
       },
       initializer: {
-        name: this.exerciseSets.currentExerciseSet.name,
-        category: this.exerciseSets.currentExerciseSet.category,
-        comments: this.exerciseSets.currentExerciseSet.comments
+        name: this.exerciseSet.name,
+        category: this.exerciseSet.category,
+        comments: this.exerciseSet.comments
       }
     }).present();
   }
@@ -128,7 +119,7 @@ export class ExerciseSetPreviewPage {
           if (!initializer) {
             return;
           }
-          this.exerciseSets.currentExerciseSet.shareExerciseSet(initializer).subscribe({
+          this.exerciseSet.shareExerciseSet(initializer).subscribe({
             next: (result: Object) => {
               this.presentToast('Shared with ' + initializer['email']);
             },
@@ -196,15 +187,11 @@ export class ExerciseSetPreviewPage {
 
   changeCurrentExerciseSet(exerciseSetId: number) {
     this.changeDetect.detectChanges();
-    if (!exerciseSetId) {
-      this.selectedExerciseSet = null;
-      this.formatExerciseSetDetails();
-      return;
-    }
     let loading = this.showLoading();
     this.exerciseSets.setCurrentExerciseSet(exerciseSetId).subscribe(
       (x: any) => {
         loading.dismiss();
+        this.assignExerciseSet();
         this.loadExercises();
         this.formatExerciseSetDetails();
       },
@@ -217,8 +204,13 @@ export class ExerciseSetPreviewPage {
     )
   }
 
+  private assignExerciseSet() {
+    this.exerciseSet = this.exerciseSets.currentExerciseSet;
+  }
+
   ngAfterViewInit() {
     this.contents.changes.subscribe((changes: any) => this.displayExercises());
+    this.assignExerciseSet();
     this.formatExerciseSetDetails();
     this.loadExercises();
   }
@@ -228,10 +220,9 @@ export class ExerciseSetPreviewPage {
       return;
     }
     this.exercises.length = 0;
-    let exerciseSet = this.exerciseSets.currentExerciseSet;
-    exerciseSet.initIterator();
-    while (exerciseSet.next() != null) {
-      this.exercises.push(exerciseSet.currentExercise);
+    this.exerciseSet.initIterator();
+    while (this.exerciseSet.next() != null) {
+      this.exercises.push(this.exerciseSet.currentExercise);
     }
   }
 

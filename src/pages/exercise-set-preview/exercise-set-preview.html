@@ -1,24 +1,27 @@
 <ion-header>
   <ion-navbar>
     <ion-title>Exercise Sets</ion-title>
+    <div class="remaining-exercise-sets" [hidden]="authenticator.isGuest">
+      You can create {{ exerciseSets.remainingExerciseSetCount }} more exercise set(s);
+    </div>
     <app-buttons></app-buttons>
   </ion-navbar>
 </ion-header>
 
 <ion-content padding (window:resize)="onResize($event)">
   <ion-list no-lines>
-    <ion-card [hidden]="!exerciseSets.currentExerciseSet">
-        <ion-card-header>{{ exerciseSetName }}</ion-card-header>
+    <ion-card [hidden]="!exerciseSet">
+        <ion-card-header>{{ exerciseSet?.name }}</ion-card-header>
         <ion-card-content>{{ exerciseSetDetails }}</ion-card-content>
     </ion-card>
     <ion-item>
       <ion-buttons>
         <button ion-button (click)="selectExerciseSet()" [disabled]="editing" color="primary" outline small>Select Set</button>
-        <button ion-button (click)="newExerciseSet()" [disabled]="editing" color="primary" outline small>New Set</button>
-        <button ion-button (click)="updateExerciseSetMetadata()" [hidden]="!exerciseSets.currentExerciseSet || !isOwner" [disabled]="editing" color="primary" outline small>Edit Set</button>
-        <button ion-button (click)="deleteExerciseSet()" [hidden]="!exerciseSets.currentExerciseSet || !isOwner" [disabled]="editing" color="danger" outline small>Remove Set</button>
-        <button ion-button (click)="newExercise()" [hidden]="!exerciseSets.currentExerciseSet || !isOwner" [disabled]="editing" color="primary" outline small>New Exercise</button>
-        <button ion-button (click)="shareExerciseSet()" [hidden]="!exerciseSets.currentExerciseSet" [disabled]="editing" color="primary" outline small>Share Set</button> 
+        <button ion-button (click)="newExerciseSet()" [hidden]="authenticator.isGuest" [disabled]="editing || exerciseSets.remainingExerciseSetCount == 0" color="primary" outline small>New Set</button>
+        <button ion-button (click)="updateExerciseSetMetadata()" [hidden]="!exerciseSet || !isOwner" [disabled]="editing" color="primary" outline small>Edit Set</button>
+        <button ion-button (click)="deleteExerciseSet()" [hidden]="!exerciseSet || !isOwner" [disabled]="editing" color="danger" outline small>Remove Set</button>
+        <button ion-button (click)="newExercise()" [hidden]="!exerciseSet || !isOwner" [disabled]="editing" color="primary" outline small>New Exercise</button>
+        <button ion-button (click)="shareExerciseSet()" [hidden]="!exerciseSet || authenticator.isGuest" [disabled]="editing" color="primary" outline small>Share Set</button> 
       </ion-buttons>
     </ion-item>
   </ion-list>

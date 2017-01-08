@@ -27,6 +27,10 @@ export class Authenticator extends BaseObservable<IAuthUser> {
     return this._user;
   }
 
+  get isGuest(): boolean {
+    return this.user.id == Config.guestUid;
+  }
+
   private saveUserSettings(): Observable<Object> {
     return this.httpService.putPersistedObject(HttpService.
       userSettings(this.user.id), this.user.settings);

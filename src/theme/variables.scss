@@ -39,6 +39,11 @@ $colors: (
 
 $fancy-font: 'Lemonada', cursive;
 
+.remaining-exercise-sets {
+  color: color($colors, secondary);
+  font-size: .8em;
+}
+
 .error-box {
   color: $background-color !important;
   background-color: color($colors, danger) !important;
