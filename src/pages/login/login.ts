@@ -87,11 +87,15 @@ export class LoginPage {
   }
 
   logIn() {
+    console.log('trying to log in');
     this.authenticator.login(this.email, this.password)
     .subscribe(
       () => {
-        this.navCtrl.pop();      }, 
+        console.log('logged in');
+        this.navCtrl.pop();
+      }, 
       (err: any) => {
+        console.log('error ' + err);
         if (isDevMode()) {
           console.dir(err);
         }
@@ -108,7 +112,7 @@ export class LoginPage {
       this.newPassword1Ctrl.value, this.newUsernameCtrl.value)
       .subscribe(
       () => {
-        this.makeVisible('LogIn');
+        this.makeVisible('logIn');
       }, 
       (err: any) => {
         if (isDevMode()) {

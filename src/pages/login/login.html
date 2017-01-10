@@ -18,10 +18,10 @@
     </ion-list>
     <ion-list [hidden]="invisibilityMap['logIn']">
       <ion-item>
-        <ion-input (change)="onChange('old')" [(ngModel)]="email" type="email" value="" placeholder="Email"></ion-input>
+        <ion-input [(ngModel)]="email" type="email" value="" placeholder="Email"></ion-input>
       </ion-item>
       <ion-item>
-        <ion-input (change)="onChange('old')" [(ngModel)]="password"  type="password" value="" placeholder="Password"></ion-input>
+        <ion-input [(ngModel)]="password"  type="password" value="" placeholder="Password"></ion-input>
       </ion-item>
       <ion-item>
         <button ion-button (click)="logIn()" color="primary"><ion-icon name="checkmark-circle"></ion-icon></button>
@@ -46,7 +46,7 @@
       <ion-item class="error-box" [hidden]="!(newPassword1Ctrl.hasError('error') && newPassword1Ctrl.touched)">{{ newPassword1Ctrl.errors?.error }}</ion-item>
 
       <ion-item>
-        <ion-input (change)="onPasswordChange()" formControlName="newPassword2"  type="password" placeholder="Re-enter password"></ion-input>
+        <ion-input formControlName="newPassword2"  type="password" placeholder="Re-enter password"></ion-input>
       </ion-item>
       <ion-item class="error-box" [hidden]="!(newPassword2Ctrl.hasError('error') && newPassword2Ctrl.touched)">{{ newPassword2Ctrl.errors?.error }}</ion-item>
       
