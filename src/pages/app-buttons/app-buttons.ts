@@ -15,7 +15,7 @@ export class AppButtons {
 
   logout() {
     this.authenticator.logout().subscribe({
-      next: (res: Object) => {
+      next: () => {
         this.navCtrl.push(HomePage);
       },
       error: (err: any) => {

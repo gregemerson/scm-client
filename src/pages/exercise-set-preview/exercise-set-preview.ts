@@ -1,4 +1,4 @@
-import {SimpleChanges, ChangeDetectorRef, Component, ViewChildren, ViewChild, ElementRef, QueryList, EventEmitter} from '@angular/core';
+import {SimpleChanges, ChangeDetectorRef, Component, ViewChildren, ViewChild, ElementRef, QueryList, EventEmitter, Output} from '@angular/core';
 import {NavController, NavParams, LoadingController, Loading, ModalController, PopoverController, Content, ToastController} from 'ionic-angular';
 import * as ES from '../../providers/exercise-sets/exercise-sets';
 import {Authenticator} from '../../providers/authenticator/authenticator'
@@ -272,12 +272,11 @@ export class ExerciseSetPreviewPage {
     let display = <ExerciseDisplay>this.displays.toArray()[idx];
     let container = this.contents.toArray()[idx];
     let exercise = this.exercises[idx];
+    let draw = () => this.drawExercise(exercise, display, container);
     exercise.display.takeSnapShot();
     this.setEditMode(true, idx);
     this.editor = new 
-      ExerciseEditor(exercise.display, () => {
-        this.drawExercise(exercise, display, container);
-      }, (position: number) => {
+      ExerciseEditor(exercise.display, draw, (position: number) => {
         if (position < 0) {
           display.hideCursor();
           return;
@@ -286,13 +285,15 @@ export class ExerciseSetPreviewPage {
       }, (snapShot: Object) => {
         // Save
         let loading = this.showLoading();
-        this.setEditMode(false);
         let fieldsToSave: string[] = [];
         for (let field of this.saveFields) {
           if (field == 'notation' && exercise.display.isDirty) {
             fieldsToSave.push(field);
           }
           else {
+            if (field == 'category' && !exercise[field]) {
+              exercise[field] = 'Uncategorized';
+            }
             if (exercise[field] != snapShot[field]) {
               exercise[field] = snapShot[field];
               fieldsToSave.push(field);
@@ -302,25 +303,37 @@ export class ExerciseSetPreviewPage {
         this.exerciseSets.currentExerciseSet.
           save(exercise, fieldsToSave).subscribe({
             next: () => {
+                this.setEditMode(false);
+                display.hideCursor();
                 loading.dismiss();
             },
             error: (err: any) => {
+              this.revertExerciseValues(exercise, draw);
+              display.hideCursor();
               loading.dismiss();
               let message = MessagesPage.createMessage(
                   'Error', err, MessageType.Error);
               this.showMessages([message]);
+            },
+            complete: () => {
+              console.log('complete was called');
             }
           });
       }, () => {
         // Cancel
-        let snapShot = this.editor.snapShot;
-        exercise.name = snapShot['name'];
-        exercise.comments = snapShot['comments'];
-        exercise.category = snapShot['category'];
-        exercise.display.revertToSnapShot();
+        this.revertExerciseValues(exercise, draw);
         display.hideCursor();
-        this.setEditMode(false);
       }, this.modal, this.createSnapshot(exercise));
+  }
+
+  revertExerciseValues(exercise: ES.IExercise, draw: () => void) {
+    let snapShot = this.editor.snapShot;
+    exercise.name = snapShot['name'];
+    exercise.comments = snapShot['comments'];
+    exercise.category = snapShot['category'];
+    exercise.display.revertToSnapShot();
+    draw();
+    this.setEditMode(false);
   }
 
   deleteExerciseSet() {
@@ -362,7 +375,16 @@ export class ExerciseSetPreviewPage {
     this.editing = editing;
     this.editIndex = editing ? editIndex : null;
     this.editor = !editing ? null : this.editor;
-  } 
+    this.hideTabs(editing);
+  }
+
+  private hideTabs(hide: boolean) {
+    let tabBarElement: any = document.querySelector('.tabbar.show-tabbar');
+    console.log('receiving onHideTabs');
+    let mode = hide ? 'none' : 'flex';
+    tabBarElement.style.height = 
+    tabBarElement.style.display = mode;
+  }
 }
 
 export class ExerciseEditor {

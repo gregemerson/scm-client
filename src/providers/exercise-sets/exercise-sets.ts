@@ -168,6 +168,7 @@ class ExerciseSet implements IExerciseSet {
       this.disabledExercises[<number>exerciseId] = true;
     }
     this._isOwner = isOwner;
+    console.log('is owner ' + this.isOwner);
   }
 
   get isOwner(): boolean {

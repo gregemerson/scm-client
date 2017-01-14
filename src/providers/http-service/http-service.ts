@@ -67,24 +67,44 @@ export class HttpService extends Observable<HttpServiceErrors> {
     return Config.apiRoot + relUrl;
   }
 
+  networkErrorHandler(err: any): ErrorObservable {
+    this.notifySubscribers([{
+      code: 'communication_error',
+      message: 'Could not communicate with server'
+    }]);
+    return Observable.throw(err);
+  }
+
   postPersistedObject(url: string,  data: any, requestOptions = Authenticator.newRequestOptions()): Observable<Object> {
     return this.http.post(url, data, requestOptions)
-      .map(response => this.processResponse(response));  
+      .map(response => this.processResponse(response))
+      .catch((error: Response | any) => {
+        return this.handleError(error);
+      });
   }
 
   putPersistedObject(url: string,  data: any, requestOptions = Authenticator.newRequestOptions()): Observable<Object> {
     return this.http.put(url, data, requestOptions)
-      .map(response => this.processResponse(response));  
+      .map(response => this.processResponse(response))
+      .catch((error: Response | any) => {
+        return this.handleError(error);
+      });
   }
   
   getPersistedObject(url: string, requestOptions = Authenticator.newRequestOptions()): Observable<Object> {
     return this.http.get(url, requestOptions)
-      .map(response => this.processResponse(response));  
+      .map(response => this.processResponse(response))
+      .catch((error: Response | any) => {
+        return this.handleError(error);
+      });
   }
 
   deletePersistedObject(url: string, requestOptions = Authenticator.newRequestOptions()): Observable<Object> {
     return this.http.delete(url, requestOptions)
-      .map(response => this.processResponse(response));    
+      .map(response => this.processResponse(response))
+      .catch((error: Response | any) => {
+        return this.handleError(error);
+      });
   }
 
   private processResponse(response: Response): HttpServiceError[] | PersistedObject {
@@ -95,8 +115,7 @@ export class HttpService extends Observable<HttpServiceErrors> {
       errors = this.parseForErrors(obj);
     }
     catch (err) {
-      // Nothing to do..
-      return new PersistedObject();
+        return new PersistedObject();
     }
     if (errors.length > 0) {
       throw errors;
@@ -104,10 +123,20 @@ export class HttpService extends Observable<HttpServiceErrors> {
     return obj;
   }
 
-  private handleError (error: any) {
-    let errMsg = error.message ? error.message : 'Server error';
-    console.log(errMsg); // log to console instead
-    return Observable.throw(errMsg);
+  private handleError (error: Response | any) {
+    this.notifySubscribers([{
+      code: 'HTTP_ERROR',
+      message: 'Server communication failure'
+    }]);
+    return Observable.throw('');
+  }
+
+  private notifySubscribers(errors: Array<HttpServiceError>) {
+    console.log('-----subscribers-------');
+    console.dir(this.subscribers);
+    for (let id in this.subscribers) {
+      this.subscribers[id].next(errors);
+    }
   }
 
   // @todo Need to check for status 200
@@ -125,11 +154,7 @@ export class HttpService extends Observable<HttpServiceErrors> {
               code: globalCode,
               message: HttpService.globalErrorCodes[code]
           });
-          for (let id in this.subscribers) {
-            if(!this.subscribers[id]) {
-              this.subscribers[id].next(errors);
-            }
-          }
+          this.notifySubscribers(errors);
           return errors;
         }
       }

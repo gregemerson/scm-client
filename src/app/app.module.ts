@@ -1,10 +1,9 @@
 import {NgModule} from '@angular/core';
-import {IonicApp, IonicModule} from 'ionic-angular';
+import {IonicApp, IonicModule, ModalController, PopoverController} from 'ionic-angular';
 import {StickControlMetronome} from './app.component';
 import {AboutPage} from '../pages/about/about';
 import {ContactPage} from '../pages/contact/contact';
 import {HomePage} from '../pages/home/home';
-import {TabsPage} from '../pages/tabs/tabs';
 import {CountDownPage} from '../pages/countdown/countdown';
 import {ExerciseDisplay} from '../pages/exercise-display/exercise-display';
 import {ExerciseSetPreviewPage} from '../pages/exercise-set-preview/exercise-set-preview'
@@ -32,7 +31,6 @@ import {AppButtons} from '../pages/app-buttons/app-buttons';
     AboutPage,
     ContactPage,
     HomePage,
-    TabsPage,
     CountDownPage,
     ExerciseDisplay,
     ExerciseSetPreviewPage,
@@ -57,7 +55,6 @@ import {AppButtons} from '../pages/app-buttons/app-buttons';
     AboutPage,
     ContactPage,
     HomePage,
-    TabsPage,
     CountDownPage,
     ExerciseDisplay,
     ExerciseSetPreviewPage,

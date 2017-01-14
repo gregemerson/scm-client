@@ -8,3 +8,7 @@ export class AccountConstraints {
     static passWordMax = 16;
     static emailRegEx = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/
 }
+
+export class ExerciseConstraints {
+    static maxExercisesPerSet = 24;
+}

@@ -12,15 +12,14 @@ import {BaseObservable} from '../../utilities/base-observable';
 import {Config} from '../../utilities/config';
 
 @Injectable()
-export class Authenticator extends BaseObservable<IAuthUser> {
+export class Authenticator {
   private static tokenKey = 'auth_token';
   private static uidKey = 'uid';
   private userLoadFilter = '?filter[include]=userSettings&filter[include]=exerciseSets&filter[include]=subscription';
   private _user: IAuthUser = null;
   errors: Object;
 
-  constructor(private http: Http, private httpService: HttpService) {
-    super();
+  constructor(private httpService: HttpService) {
   }
 
   get user(): IAuthUser {
@@ -40,10 +39,11 @@ export class Authenticator extends BaseObservable<IAuthUser> {
     if (this._user != null && this._user.id == user.id) {
       return;
     }
-    this._user = user;
-    for (let subscriberId in this.subscribers) {
-      this.subscribers[subscriberId].next(user);
+    if (user == null) {
+      this.token = null;
+      this.uid = null;
     }
+    this._user = user;
   }
 
   private get token(): string {
@@ -76,15 +76,6 @@ export class Authenticator extends BaseObservable<IAuthUser> {
     }
   }
 
-  private unsetUser() {
-    this._user = null;
-    this.token = null;
-    this.uid = null;
-    for (let subscriberId in this.subscribers) {
-      this.subscribers[subscriberId].next(null);
-    }
-  }
-
   static newRequestOptions(): RequestOptionsArgs {
     return {
       headers: new Headers({
@@ -102,13 +93,22 @@ export class Authenticator extends BaseObservable<IAuthUser> {
     });
   }
 
-  loginGuest(): Observable<void> {
+  loginGuest(): Observable<IAuthUser> {
     this.token = Config.guestToken;
     this.uid = Config.guestUid;
     return this.loadUser();
   }
 
-  login(email: String, password: String): Observable<void> {
+  tryPreviousLogin(): Observable<IAuthUser> {
+    console.log('token is ' + this.token + ' uid is ' + this.uid);
+    let hasLocalAuthData = (this.token != null && this.uid != null);
+    if (!hasLocalAuthData) {
+      return Observable.throw('NO_LOCAL_CREDENTIALS');
+    }
+    return this.loadUser();
+  }
+
+  login(email: String, password: String): Observable<IAuthUser> {
     return this.httpService.postPersistedObject(HttpService.ClientLogin, {
       email: email,
       password: password
@@ -119,36 +119,14 @@ export class Authenticator extends BaseObservable<IAuthUser> {
     });
   }
 
-  loadUser(): Observable<void> {
+  loadUser(): Observable<IAuthUser> {
     let url = HttpService.ClientsCollection + localStorage.getItem(
       Authenticator.uidKey) + this.userLoadFilter;
     return this.httpService.getPersistedObject(url).
       flatMap((user: Object, index: number) => {
         this.setUser(new AuthUser(user));
-        return Observable.of(null);
+        return Observable.of(this.user);
       });
-  }
-
-  private handleError (error: any) {
-    let errMsg = (error.message) ? error.message :
-      error.status ? `${error.status} - ${error.statusText}` : 'Server error';
-    return ErrorObservable.create(errMsg);
-  }
-
-  private handleErrors(response: Response): Object {
-    let data = <Object>response.json();
-    if (data.hasOwnProperty('error')) {
-      throw this.createError(data['error']);
-    }
-    return data;
-  }
-
-  checkLocalAuthData(): Observable<void> {
-    let hasLocalAuthData = (this.token != null && this.uid != null);
-    if (!hasLocalAuthData) {
-      return Observable.throw(null);
-    }
-    return this.loadUser();
   }
 
   private createError (error: Object):  AuthErrors {
@@ -168,16 +146,16 @@ export class Authenticator extends BaseObservable<IAuthUser> {
     return authErrors;
   }
 
-  logout(): Observable<Object> {
+  logout(): Observable<void> {
     let options = Authenticator.newRequestOptions();
     let uid = this.uid;
-    this.unsetUser();
+    this.setUser(null);
     if (uid == Config.guestUid) {
-      return Observable.of({});
+      return Observable.of(null);
     } 
     return this.httpService.postPersistedObject(HttpService.logout(), {}, options)
     .map((res : any) => {
-      return res;
+      return null;
     });
   }
 }

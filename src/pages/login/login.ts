@@ -48,7 +48,7 @@ export class LoginPage {
               private navParams: NavParams,
               private viewCtrl: ViewController,
               private formBuilder: FormBuilder) {
-    this.authenticator = <Authenticator>navParams.get('authenticator');
+    this.authenticator = <Authenticator>navParams.get('login');
     this.newUsernameCtrl = new FormControl('', [Validators.required, ScmValidators.userName]);
     this.newEmailCtrl = new FormControl('', [Validators.required, ScmValidators.email]);
     this.newPassword1Ctrl = new FormControl('', [Validators.required, ScmValidators.password]);
@@ -87,15 +87,12 @@ export class LoginPage {
   }
 
   logIn() {
-    console.log('trying to log in');
     this.authenticator.login(this.email, this.password)
     .subscribe(
       () => {
-        console.log('logged in');
         this.navCtrl.pop();
       }, 
       (err: any) => {
-        console.log('error ' + err);
         if (isDevMode()) {
           console.dir(err);
         }
