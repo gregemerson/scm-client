@@ -22,6 +22,9 @@ export class Authenticator {
   constructor(private httpService: HttpService) {
   }
 
+  onUserLoaded: (user: IAuthUser) => void;
+  onUserUnloaded: () => void;
+
   get user(): IAuthUser {
     return this._user;
   }
@@ -34,6 +37,10 @@ export class Authenticator {
     return this.httpService.putPersistedObject(HttpService.
       userSettings(this.user.id), this.user.settings);
   }
+
+  unsetUser() {
+    this.setUser(null);
+  }
   
   private setUser(user: IAuthUser) {
     if (this._user != null && this._user.id == user.id) {
@@ -42,6 +49,14 @@ export class Authenticator {
     if (user == null) {
       this.token = null;
       this.uid = null;
+      if (this.onUserUnloaded) {
+        this.onUserUnloaded();
+      }
+    }
+    else {
+      if (this.onUserLoaded) {
+        this.onUserLoaded(user);
+      }
     }
     this._user = user;
   }
@@ -103,7 +118,9 @@ export class Authenticator {
     console.log('token is ' + this.token + ' uid is ' + this.uid);
     let hasLocalAuthData = (this.token != null && this.uid != null);
     if (!hasLocalAuthData) {
-      return Observable.throw('NO_LOCAL_CREDENTIALS');
+      let error = new Error();
+      error.name = 'NO_LOCAL_CREDENTIALS';
+      return Observable.throw(error);
     }
     return this.loadUser();
   }
@@ -157,6 +174,12 @@ export class Authenticator {
     .map((res : any) => {
       return null;
     });
+  }
+
+  saveSettings(newValues: Object): Observable<void> {
+    return this.httpService.putPersistedObject(
+      HttpService.userSettings(this.user.id), newValues)
+      .map(result => null);
   }
 }
 
@@ -236,7 +259,7 @@ class AuthUserSettings implements IAuthUserSettings {
 
   constructor(rawSettings: Object) {
     Object.assign(this, rawSettings);
-  }  
+  }
 }
 
 class LoginSubscription extends Subscription {

@@ -67,14 +67,6 @@ export class HttpService extends Observable<HttpServiceErrors> {
     return Config.apiRoot + relUrl;
   }
 
-  networkErrorHandler(err: any): ErrorObservable {
-    this.notifySubscribers([{
-      code: 'communication_error',
-      message: 'Could not communicate with server'
-    }]);
-    return Observable.throw(err);
-  }
-
   postPersistedObject(url: string,  data: any, requestOptions = Authenticator.newRequestOptions()): Observable<Object> {
     return this.http.post(url, data, requestOptions)
       .map(response => this.processResponse(response))

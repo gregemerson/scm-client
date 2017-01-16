@@ -19,7 +19,6 @@ import {Authenticator} from '../providers/authenticator/authenticator';
 import {ExerciseSets} from '../providers/exercise-sets/exercise-sets';
 import {HttpService} from '../providers/http-service/http-service';
 import {Metronome} from '../providers/metronome/metronome';
-import {ResourceLibrary} from '../providers/resource-library/resource-library';
 import {NewExerciseForm} from '../pages/exercise-set-preview/new-exercise';
 import {ShareExerciseSetForm} from '../pages/exercise-set-preview/share-exercise-set';
 import {RepeatForm} from '../pages/exercise-set-preview/repeat';
@@ -75,8 +74,7 @@ import {AppButtons} from '../pages/app-buttons/app-buttons';
     Authenticator,
     ExerciseSets,
     HttpService,
-    Metronome,
-    ResourceLibrary
+    Metronome
   ]
 })
 export class AppModule {}

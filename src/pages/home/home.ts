@@ -8,8 +8,8 @@ import {ExerciseSets, IExercise} from '../../providers/exercise-sets/exercise-se
 import {ExerciseDisplay} from '../exercise-display/exercise-display'
 import {CountDownPage} from '../countdown/countdown';
 import {LoginPage} from '../login/login';
-import {ResourceLibrary} from '../../providers/resource-library/resource-library';
 import {Authenticator, IAuthUserSettings} from '../../providers/authenticator/authenticator';
+import {Observable} from 'rxjs/Observable';
 
 @Component({
   selector: 'home',
@@ -59,6 +59,7 @@ export class HomePage {
   startButtonText: string = HomePage.startText;
   pauseButtonHidden = true;
   userSettings: IAuthUserSettings;
+  noSetSelectedText = 'no exercise set is selected';
 
   // Communication with countdown popover
   @Output() countdown: EventEmitter<number> = new EventEmitter<number>();
@@ -77,7 +78,7 @@ export class HomePage {
   countdownPromise: Promise<any>;
 
   private loading: Loading;
-  private loaded = false;
+  private loaded = true;
 
   // Info properties
   count: number = 0;
@@ -92,62 +93,43 @@ export class HomePage {
               private popoverController : PopoverController,
               private modalController: ModalController,
               public authenticator: Authenticator, 
-              public resourceLibrary: ResourceLibrary,
               private loadingController: LoadingController) {
-    // this all needs to be moved to onInitView or something
     this.initializeDisplay();
-    this.loading = loadingController.create();
-    resourceLibrary.load()
-    .then(resolve => audioBuffers.loadAll('library.json', new AudioContext()))
-    .then(resolve => metronome.load(audioBuffers))
-    .then(resolve => {
-      // Set up metronome event handlers
-      metronome.startDelay.subscribe(count => {
-        this.countdownDialog = popoverController.create(
-          CountDownPage, {countdown: this.countdown});
-        this.countdownPromise = 
-          this.countdownDialog.present();
-      });
-      metronome.countdown.subscribe(count => {
-        this.countdownPromise.then(value => {
-        this.countdown.emit(count);
-        })
-      });
-      metronome.startCountIn.subscribe(() => {
-        this.changeProperties(['message'], ['Count-In']);
-      });
-      metronome.countInBeat.subscribe(count => {
-        this.changeProperties(['count'], [count]);
-      });
-      metronome.startExercises.subscribe(exercise => {
-        this.setDisplays(exercise[0], exercise[1]);
-        this.changeProperties(['message'], ['Beat']);
-      });
-      metronome.endExercise.subscribe(exercise => {
-        this.setDisplays(exercise[0], exercise[1]);
-        this.changeProperties(['currentExercise', 'nextExercise'],
-         [exercise[0], exercise[1]]);
-      });
-      metronome.exerciseBeat.subscribe(count => {
-        this.changeProperties(['count'], [count]);
-      });
-      metronome.repitition.subscribe(repitition => {
-        this.changeProperties(['repitition'], [repitition]);
-      });
-      metronome.endExerciseSet.subscribe(() => {
-        this.resetPage();
-      });
-    })
-    .then(resolved => {
-      //this.loading.dismiss();
-      this.loaded = true;
-      this.loading = null;
-    })
-    .catch(reason => {
-      // @todo need real error reporting
-      //this.loading.dismiss();
-      this.loading = null;
-      alert(reason);
+    // Wire up the metronome
+    this.metronome.startDelay.subscribe(count => {
+      this.countdownDialog = this.popoverController.create(
+        CountDownPage, {countdown: this.countdown});
+      this.countdownPromise = 
+        this.countdownDialog.present();
+    });
+    metronome.countdown.subscribe(count => {
+      this.countdownPromise.then(value => {
+      this.countdown.emit(count);
+      })
+    });
+    metronome.startCountIn.subscribe(() => {
+      this.changeProperties(['message'], ['Count-In']);
+    });
+    metronome.countInBeat.subscribe(count => {
+      this.changeProperties(['count'], [count]);
+    });
+    metronome.startExercises.subscribe(exercise => {
+      this.setDisplays(exercise[0], exercise[1]);
+      this.changeProperties(['message'], ['Beat']);
+    });
+    metronome.endExercise.subscribe(exercise => {
+      this.setDisplays(exercise[0], exercise[1]);
+      this.changeProperties(['currentExercise', 'nextExercise'],
+        [exercise[0], exercise[1]]);
+    });
+    metronome.exerciseBeat.subscribe(count => {
+      this.changeProperties(['count'], [count]);
+    });
+    metronome.repitition.subscribe(repitition => {
+      this.changeProperties(['repitition'], [repitition]);
+    });
+    metronome.endExerciseSet.subscribe(() => {
+      this.resetPage();
     });
   }
 

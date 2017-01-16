@@ -34,8 +34,6 @@ export class LoginPage {
   newPassword1Error = '';
   newPassword2Error = '';
   passwordMismatch = false;
-
-  private authenticator: Authenticator;
   
   // Used to switch between different control groups
   invisibilityMap: InvisibilityMap = {
@@ -47,8 +45,9 @@ export class LoginPage {
   constructor(private navCtrl: NavController,
               private navParams: NavParams,
               private viewCtrl: ViewController,
-              private formBuilder: FormBuilder) {
-    this.authenticator = <Authenticator>navParams.get('login');
+              private formBuilder: FormBuilder,
+              private authenticator: Authenticator) {
+                
     this.newUsernameCtrl = new FormControl('', [Validators.required, ScmValidators.userName]);
     this.newEmailCtrl = new FormControl('', [Validators.required, ScmValidators.email]);
     this.newPassword1Ctrl = new FormControl('', [Validators.required, ScmValidators.password]);

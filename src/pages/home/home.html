@@ -1,7 +1,10 @@
 <ion-header>
   <ion-navbar>
-    <ion-title>Stick Control Metronome{{ exerciseSets.currentExerciseSet != null ? ':' : ''}}
-      <span color="primary">{{ exerciseSets.currentExerciseSet?.name }}</span>
+    <button ion-button menuToggle>
+      <ion-icon name="menu"></ion-icon>
+    </button>
+    <ion-title>Stick Control Metronome:
+      <span color="primary">{{ exerciseSets.currentExerciseSet != null ? exerciseSets.currentExerciseSet.name : noSetSelectedText}}</span>
     </ion-title>
     <app-buttons></app-buttons>
   </ion-navbar>
