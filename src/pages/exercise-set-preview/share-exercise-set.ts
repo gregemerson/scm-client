@@ -2,7 +2,7 @@ import {Component} from '@angular/core';
 import {NavParams, NavController} from 'ionic-angular'
 import {Validators, FormBuilder, FormGroup, FormControl} from '@angular/forms';
 import {ScmValidators} from '../../utilities/scm-validators';
-import {ExerciseConstraints} from './exercise-constraints';
+import {ExerciseConstraints} from '../../utilities/constraints';
 
 @Component({
   selector: 'share-exercise-set',

@@ -42,9 +42,9 @@ export class StickControlMetronome {
     private metronome: Metronome) {
 
     platform.ready().then(() => {
-      let loading = this.loadingCtrl.create();
-      loading.present();
       this.authenticator.onUserLoaded = (user: IAuthUser) => {
+        let loading = this.loadingCtrl.create();
+        loading.present();
         this.loadServices(user).subscribe({
           next: (result: any) => {
             loading.dismiss();

@@ -10,7 +10,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 import { Component } from '@angular/core';
 import { NavParams, NavController } from 'ionic-angular';
 import { Validators, FormBuilder } from '@angular/forms';
-import { ExerciseConstraints } from './exercise-constraints';
+import { ExerciseConstraints } from '../../utilities/constraints';
 export var NewExerciseSetForm = (function () {
     function NewExerciseSetForm(formBuilder, navCtrl, params) {
         this.formBuilder = formBuilder;

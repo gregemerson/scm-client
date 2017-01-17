@@ -1,7 +1,7 @@
 import {Component} from '@angular/core';
 import {NavParams, NavController} from 'ionic-angular'
 import {Validators, FormBuilder, FormGroup, FormControl} from '@angular/forms';
-import {ExerciseConstraints} from './exercise-constraints';
+import {ExerciseConstraints} from '../../utilities/constraints';
 
 @Component({
   selector: 'new-exercise-set',

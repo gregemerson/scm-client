@@ -7,7 +7,7 @@ import {MessagesPage, MessageType, IMessage} from '../messages/messages';
 import {NewExerciseSetForm} from './new-exercise-set';
 import {NewExerciseForm} from './new-exercise';
 import {RepeatForm} from './repeat';
-import {ExerciseConstraints} from './exercise-constraints';
+import {ExerciseConstraints} from '../../utilities/constraints';
 import {WarningPage} from '../messages/warning';
 import {ExerciseSetSelectorPage} from './exercise-set-selector';
 import {ShareExerciseSetForm} from './share-exercise-set';

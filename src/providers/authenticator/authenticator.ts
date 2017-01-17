@@ -176,9 +176,9 @@ export class Authenticator {
     });
   }
 
-  saveSettings(newValues: Object): Observable<void> {
+  saveSettings(): Observable<void> {
     return this.httpService.putPersistedObject(
-      HttpService.userSettings(this.user.id), newValues)
+      HttpService.userSettings(this.user.id), this.user.settings)
       .map(result => null);
   }
 }

@@ -10,5 +10,21 @@ export class AccountConstraints {
 }
 
 export class ExerciseConstraints {
-    static maxExercisesPerSet = 24;
+  readonly maxNameLength = 60;
+  readonly maxCategoryLength = 100;
+  readonly maxExerciseCommentsLength = 100;
+  readonly maxExerciseSetCommentsLength = 200;
+  readonly maxSharedExerciseComments = 100;
+  readonly maxExercisesPerSet = 24;
+}
+
+export class SettingsConstraints {
+  readonly minTempo = 30;
+  readonly maxTempo = 220;
+  readonly minStep = 0;
+  readonly maxStep = 50;
+  readonly minReps = 1;
+  readonly maxReps = 100;
+  readonly minDelay = 0;
+  readonly maxDelay = 60;
 }
