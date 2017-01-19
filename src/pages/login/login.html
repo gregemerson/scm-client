@@ -55,7 +55,7 @@
         <button ion-button (click)="makeVisible('menu')" color="danger"><ion-icon name="close-circle"></ion-icon></button>
       </ion-item>
     </form>
-    <ion-item color="danger" [hidden]="!errorMessage">{{ errorMessage }}</ion-item>
+    <message-item [isError]="true"></message-item>
     </ion-card-content>
   </ion-card>
 </ion-content>

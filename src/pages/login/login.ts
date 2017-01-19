@@ -1,8 +1,10 @@
-import {Component, OnChanges, isDevMode} from '@angular/core';
+import {Component, OnChanges, isDevMode, ViewChild} from '@angular/core';
 import {NavController, NavParams, ViewController} from 'ionic-angular';
 import {Authenticator, IAuthUser} from '../../providers/authenticator/authenticator';
 import {Validators, FormBuilder, FormGroup, FormControl} from '@angular/forms';
 import {ScmValidators} from '../../utilities/scm-validators';
+import {MessageItem} from '../message-item/message-item';
+import {IScmError} from '../../utilities/errors';
 
 interface InvisibilityMap {
   menu: boolean,
@@ -15,10 +17,11 @@ interface InvisibilityMap {
   templateUrl: 'login.html'
 })
 export class LoginPage {
-  errorMessage: string = null;
+  @ViewChild(MessageItem) errorMessage: MessageItem;
   constraints = new ScmValidators();
   accountGroup: FormGroup;
   errorFontEm = .8;
+
 
   // Current accounts
   password = '';
@@ -47,7 +50,11 @@ export class LoginPage {
               private viewCtrl: ViewController,
               private formBuilder: FormBuilder,
               private authenticator: Authenticator) {
-                
+    let err = <IScmError>navParams.get('error');
+    if (err) {
+      this.handleError(err);
+    }
+
     this.newUsernameCtrl = new FormControl('', [Validators.required, ScmValidators.userName]);
     this.newEmailCtrl = new FormControl('', [Validators.required, ScmValidators.email]);
     this.newPassword1Ctrl = new FormControl('', [Validators.required, ScmValidators.password]);
@@ -62,14 +69,6 @@ export class LoginPage {
     });
   }
 
-  errorOn(message: string) {
-    this.errorMessage = message;
-  }
-
-  errorOff() {
-    this.errorMessage = null;
-  }
-
   makeVisible(controlGroup: string) {
     for (let ctrl in this.invisibilityMap) {
       this.invisibilityMap[ctrl] = ctrl != controlGroup;
@@ -82,7 +81,7 @@ export class LoginPage {
     this.newEmailCtrl.setValue('');
     this.newPassword1Ctrl.setValue('');
     this.newPassword2Ctrl.setValue('');
-    this.errorOff();
+    this.errorMessage.hide();
   }
 
   logIn() {
@@ -92,10 +91,7 @@ export class LoginPage {
         this.navCtrl.pop();
       }, 
       (err: any) => {
-        if (isDevMode()) {
-          console.dir(err);
-        }
-        this.errorOn('Invalid credentials');
+        this.handleError(err);
       }
     );
   }
@@ -111,10 +107,7 @@ export class LoginPage {
         this.makeVisible('logIn');
       }, 
       (err: any) => {
-        if (isDevMode()) {
-          console.dir(err);
-        }
-        this.errorOn('Could not create account');
+        this.handleError(err);
       }
     );
   }
@@ -125,11 +118,15 @@ export class LoginPage {
           this.navCtrl.pop();
       }, 
       err => {
-        if (isDevMode()) {
-          console.log(err);
-        }
-        this.errorOn('Could not log in as guest')
+        this.handleError(err);
       }
     );
+  }
+
+  private handleError(err: IScmError) {
+    if (isDevMode()) {
+      console.log(err);
+    }
+    this.errorMessage.show(err.message);  
   }
 }

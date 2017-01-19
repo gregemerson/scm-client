@@ -23,6 +23,7 @@ import {NewExerciseForm} from '../pages/exercise-set-preview/new-exercise';
 import {ShareExerciseSetForm} from '../pages/exercise-set-preview/share-exercise-set';
 import {RepeatForm} from '../pages/exercise-set-preview/repeat';
 import {AppButtons} from '../pages/app-buttons/app-buttons';
+import {MessageItem} from '../pages/message-item/message-item'
 
 @NgModule({
   declarations: [
@@ -43,7 +44,8 @@ import {AppButtons} from '../pages/app-buttons/app-buttons';
     NewExerciseSetForm,
     ShareExerciseSetForm,
     NewExerciseForm,
-    AppButtons
+    AppButtons,
+    MessageItem
   ],
   imports: [
     IonicModule.forRoot(StickControlMetronome, {prodMode: false})

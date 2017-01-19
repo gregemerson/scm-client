@@ -5,12 +5,11 @@ import {Config} from '../../utilities/config'
 import {Observable} from 'rxjs/Observable';
 import {ErrorObservable} from 'rxjs/observable/ErrorObservable';
 import {Observer, Subscriber, Subscription} from 'rxjs';
+import {ScmErrors, IScmError, ScmErrorList} from '../../utilities/errors'
 import 'rxjs/add/operator/map';
 
-export type HttpServiceErrors = Array<HttpServiceError>;
-
 @Injectable()
-export class HttpService extends Observable<HttpServiceErrors> {
+export class HttpService extends Observable<ScmErrorList> {
   static get ClientsCollection(): string {return this.addRoot('Clients/')}
   static get ClientLogin(): string {return this.addRoot('Clients/login')}
   static get newUser(): string {return this.addRoot('Clients/createNewUser')}
@@ -47,14 +46,14 @@ export class HttpService extends Observable<HttpServiceErrors> {
     return this.addRoot('Clients/' + clientId.toString() + '/sharedExerciseSets');
   }
 
-  private subscribers: {[key: string]: Subscriber<HttpServiceErrors>} = {};
-  private static globalErrorCodes = {
+  private subscribers: {[key: string]: Subscriber<ScmErrorList>} = {};
+  private static AuthErrorCodes = {
     INVALID_TOKEN: 'Your session has expired, please re-log in.',
     AUTHORIZATION_REQUIRED: 'Unauthorized access attempt.'
   }
 
   constructor(private http: Http) {
-    super((subscriber: Subscriber<HttpServiceErrors>) => {
+    super((subscriber: Subscriber<ScmErrorList>) => {
       let key = Math.random().toString();
       this.subscribers[key] = subscriber;
       return new HttpServiceErrorSubscription(() => {
@@ -99,9 +98,9 @@ export class HttpService extends Observable<HttpServiceErrors> {
       });
   }
 
-  private processResponse(response: Response): HttpServiceError[] | PersistedObject {
+  private processResponse(response: Response): ScmErrorList | PersistedObject {
     let obj: PersistedObject;
-    let errors: HttpServiceError[] = [];
+    let errors: ScmErrorList = [];
     try {
       obj = <Object>response.json();
       errors = this.parseForErrors(obj);
@@ -116,36 +115,27 @@ export class HttpService extends Observable<HttpServiceErrors> {
   }
 
   private handleError (error: Response | any) {
-    this.notifySubscribers([{
-      code: 'HTTP_ERROR',
-      message: 'Server communication failure'
-    }]);
-    return Observable.throw('');
+    return Observable.throw(ScmErrors.httpError);
   }
 
-  private notifySubscribers(errors: Array<HttpServiceError>) {
-    console.log('-----subscribers-------');
-    console.dir(this.subscribers);
+  private notifySubscribers(errors: ScmErrorList) {
     for (let id in this.subscribers) {
       this.subscribers[id].next(errors);
     }
   }
 
   // @todo Need to check for status 200
-  private parseForErrors(obj: Object): Array<HttpServiceError> {
-    let errors: Array<HttpServiceError> = [];
+  private parseForErrors(obj: Object): ScmErrorList {
+    let errors: ScmErrorList = [];
     if (!obj.hasOwnProperty('error')) {
-      return <[HttpServiceError]>[];
+      return <[IScmError]>[];
     }
     let error: Object = obj['error'];
     if (error.hasOwnProperty('code')) {
       let code = error['code'];
-      for (let globalCode in HttpService.globalErrorCodes) {
+      for (let globalCode in HttpService.AuthErrorCodes) {
         if (globalCode == code) {
-          errors.push({
-              code: globalCode,
-              message: HttpService.globalErrorCodes[code]
-          });
+          errors.push(ScmErrors.authRequired);
           this.notifySubscribers(errors);
           return errors;
         }
@@ -178,11 +168,6 @@ class HttpServiceErrorSubscription extends Subscription {
       unsubsribe();
     });
   } 
-}
-
-export class HttpServiceError {
-  code: string;
-  message : string;
 }
 
 export class PersistedObject extends Object {

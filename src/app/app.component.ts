@@ -6,13 +6,14 @@ import {ExerciseSets} from '../providers/exercise-sets/exercise-sets';
 import {LoginPage} from '../pages/login/login';
 import {MessagesPage, IMessage, MessageType} from '../pages/messages/messages';
 import {Observable} from 'rxjs/Observable';
-import {HttpService, HttpServiceError, HttpServiceErrors} from '../providers/http-service/http-service';
+import {HttpService} from '../providers/http-service/http-service';
 import {AudioBuffers} from '../providers/audio-buffers/audio-buffers';
 import {Metronome} from '../providers/metronome/metronome';
 import {HomePage} from '../pages/home/home';
 import {SettingsPage} from '../pages/settings/settings';
 import {ExerciseSetPreviewPage} from '../pages/exercise-set-preview/exercise-set-preview';
 import {GuidePage} from '../pages/guide/guide';
+import {ScmErrors, ScmErrorList, IScmError} from '../utilities/errors';
 
 @Component({
   templateUrl: 'app.html',
@@ -45,53 +46,34 @@ export class StickControlMetronome {
       this.authenticator.onUserLoaded = (user: IAuthUser) => {
         let loading = this.loadingCtrl.create();
         loading.present();
+
         this.loadServices(user).subscribe({
           next: (result: any) => {
             loading.dismiss();
           },
           error: (err: any) => {
             loading.dismiss();
-            this.login('Unable to load the application');
+            this.login(err);
           }
         });
       };
+
       this.authenticator.onUserUnloaded = () => {
         this.unloadUserData();
       }
+
       // Listen for errors forcing navigation to login page
-      this.httpService.subscribe(({next: (errors: HttpServiceErrors) => {
-        console.log('---------------------------');
-        console.dir(errors);
-        let displayErrors: Array<HttpServiceError> = [];
+      this.httpService.subscribe(({next: (errors: ScmErrorList) => {
+        let displayErrors: ScmErrorList = [];
         for (let error of errors) {
-          if (error.code == 'INVALID_TOKEN' || error.code == 'AUTHORIZATION_REQUIRED') {
+          if (error.code == ScmErrors.AuthRequired) {
             authenticator.unsetUser();
             this.unloadUserData();
             displayErrors.length = 0;
-            this.login('invalid or need auth');
+            this.login();
             break;
           }
-          else if (error.code == 'HTTP_ERROR' && !this.authenticator.user && !this.loginPushed) {
-            displayErrors.length = 0;
-            this.login(error.message);
-            break;
-          }
-          else {
-            displayErrors.push(error);
-          }
         }
-        if (displayErrors.length == 0) {
-          return;
-        }
-        let display = new Array<IMessage>();
-        for (let error of displayErrors) {
-          console.log('error: ');
-          console.dir(error);
-          display.push(MessagesPage.createMessage(
-            error.code, error.message, MessageType.Error));
-        }
-        this.modalController.create(
-          MessagesPage, {messages: display}).present();
       }}));
 
       this.tryPreviousLogin();
@@ -105,8 +87,12 @@ export class StickControlMetronome {
       next: (user: IAuthUser) => {
       },
       error: (err: any) => {
-        if (err.name == 'NO_LOCAL_CREDENTIALS') {
-          this.login('no locals');
+        // err of type IScmError
+        if (err.code == ScmErrors.NoLocalCredentials) {
+          this.login();
+        }
+        else {
+          this.login(err);
         }
       }
     });
@@ -124,7 +110,13 @@ export class StickControlMetronome {
     .flatMap(() => {
       this.servicesLoaded = true;
       return Observable.of(null);
-    }).retry(1);
+    })
+    .retry(1)
+    .catch((error: any, caught: Observable<any>) => {
+      console.log('load services failed: ');
+      console.dir(error);
+      return Observable.throw(error);
+    });
   }
 
   openPage(page) {
@@ -134,18 +126,9 @@ export class StickControlMetronome {
   }
 
   // Goto login page
-  private login(errorMessage: string) {
-    if (!errorMessage) {
-      errorMessage = 'from login method';
-    }
+  private login(error: IScmError = null) {
     this.loginPushed = true;
-    this.nav.push(LoginPage);
-    if (errorMessage) {
-      this.modalController.create(MessagesPage, {
-        messages: [MessagesPage.createMessage(
-          'Error', errorMessage, MessageType.Error)]
-      }).present();
-    }
+    this.nav.push(LoginPage, {error: error});
   }
 
   private unloadUserData(): void {

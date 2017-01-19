@@ -10,6 +10,7 @@ import 'rxjs/add/observable/throw';
 import 'rxjs/add/observable/of';
 import {BaseObservable} from '../../utilities/base-observable';
 import {Config} from '../../utilities/config';
+import {ScmErrors} from '../../utilities/errors'
 
 @Injectable()
 export class Authenticator {
@@ -118,9 +119,7 @@ export class Authenticator {
     console.log('token is ' + this.token + ' uid is ' + this.uid);
     let hasLocalAuthData = (this.token != null && this.uid != null);
     if (!hasLocalAuthData) {
-      let error = new Error();
-      error.name = 'NO_LOCAL_CREDENTIALS';
-      return Observable.throw(error);
+      return Observable.throw(ScmErrors.noLocalCredentials);
     }
     return this.loadUser();
   }
@@ -133,6 +132,8 @@ export class Authenticator {
       this.token = loginData['id'];
       this.uid = loginData['userId'];
       return this.loadUser();
+    }).catch((err: any) => {
+      return Observable.throw(ScmErrors.loginError);
     });
   }
 
