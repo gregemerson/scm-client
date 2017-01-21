@@ -1,0 +1,20 @@
+{
+    "sc-group" : {
+        "sc-audio": {
+            "items" :[
+                    {"name" : "silence", "location" : "assets/audio/silence.wav"},
+                    {"name" : "1-count", "location" : "assets/audio/1.wav"},
+                    {"name" : "2-count", "location" : "assets/audio/2.wav"},
+                    {"name" : "3-count", "location" : "assets/audio/3.wav"},
+                    {"name" : "4-count", "location" : "assets/audio/4.wav"},
+                    {"name" : "5-count", "location" : "assets/audio/5.wav"},
+                    {"name" : "6-count", "location" : "assets/audio/6.wav"},
+                    {"name" : "7-count", "location" : "assets/audio/7.wav"},
+                    {"name" : "8-count", "location" : "assets/audio/8.wav"},
+                    {"name" : "cowbell 1", "location" : "assets/audio/cowbell-1.wav"},
+                    {"name" : "hi-hat 1", "location" : "assets/audio/hi-hat-1.wav"},
+                    {"name" : "hip-hop snare", "location" : "assets/audio/hip-hop-snare-1.wav"}
+                ]
+            }
+    }
+}

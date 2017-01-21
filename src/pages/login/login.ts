@@ -50,6 +50,7 @@ export class LoginPage {
               private viewCtrl: ViewController,
               private formBuilder: FormBuilder,
               private authenticator: Authenticator) {
+
     let err = <IScmError>navParams.get('error');
     if (err) {
       this.handleError(err);
@@ -82,6 +83,11 @@ export class LoginPage {
     this.newPassword1Ctrl.setValue('');
     this.newPassword2Ctrl.setValue('');
     this.errorMessage.hide();
+  }
+
+  ngAfterViewInit() {
+    console.log('after view int called: ');
+    console.dir(this.errorMessage);
   }
 
   logIn() {

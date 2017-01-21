@@ -98,6 +98,12 @@ export class StickControlMetronome {
     });
   }
 
+  // Goto login page
+  private login(error: IScmError = null) {
+    this.loginPushed = true;
+    this.nav.push(LoginPage, {error: error});
+  }
+
   loadServices(user: IAuthUser): Observable<void> {
     return Observable.forkJoin([
       this.exerciseSets.load(user),
@@ -123,12 +129,6 @@ export class StickControlMetronome {
     // Reset the content nav to have just this page
     // we wouldn't want the back button to show in this scenario
     this.nav.setRoot(page.component);
-  }
-
-  // Goto login page
-  private login(error: IScmError = null) {
-    this.loginPushed = true;
-    this.nav.push(LoginPage, {error: error});
   }
 
   private unloadUserData(): void {

@@ -1,4 +1,4 @@
-import {Injectable} from '@angular/core';
+import {Injectable, isDevMode} from '@angular/core';
 import {Http, RequestOptionsArgs, Response} from '@angular/http';
 import {Authenticator} from '../authenticator/authenticator';
 import {Config} from '../../utilities/config'
@@ -46,6 +46,13 @@ export class HttpService extends Observable<ScmErrorList> {
     return this.addRoot('Clients/' + clientId.toString() + '/sharedExerciseSets');
   }
 
+  private debug(err: any, op: string) {
+    if (isDevMode()) {
+      console.log(op + ':');
+      console.dir(err);
+    }
+  }
+
   private subscribers: {[key: string]: Subscriber<ScmErrorList>} = {};
   private static AuthErrorCodes = {
     INVALID_TOKEN: 'Your session has expired, please re-log in.',
@@ -70,6 +77,7 @@ export class HttpService extends Observable<ScmErrorList> {
     return this.http.post(url, data, requestOptions)
       .map(response => this.processResponse(response))
       .catch((error: Response | any) => {
+        this.debug(error, 'post');
         return this.handleError(error);
       });
   }
@@ -78,14 +86,16 @@ export class HttpService extends Observable<ScmErrorList> {
     return this.http.put(url, data, requestOptions)
       .map(response => this.processResponse(response))
       .catch((error: Response | any) => {
+        this.debug(error, 'put');
         return this.handleError(error);
-      });
+      }); 
   }
   
   getPersistedObject(url: string, requestOptions = Authenticator.newRequestOptions()): Observable<Object> {
     return this.http.get(url, requestOptions)
       .map(response => this.processResponse(response))
       .catch((error: Response | any) => {
+        this.debug(error, 'get');
         return this.handleError(error);
       });
   }
@@ -94,6 +104,7 @@ export class HttpService extends Observable<ScmErrorList> {
     return this.http.delete(url, requestOptions)
       .map(response => this.processResponse(response))
       .catch((error: Response | any) => {
+        this.debug(error, 'delete');
         return this.handleError(error);
       });
   }

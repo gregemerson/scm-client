@@ -1,20 +1,20 @@
 
 export class ScmErrors {
-    static HttpCode = 'HTTP_ERROR';
-    static LoginCode = "LOGIN_ERROR";
+    static HttpError = 'HTTP_ERROR';
+    static LoginError = "LOGIN_ERROR";
     static NoLocalCredentials = "NO_LOCAL_CREDENTIALS";
     static AuthRequired = 'AUTHORIZATION_REQUIRED';
 
     static get httpError(): IScmError {
         return {
-            code: ScmErrors.HttpCode,
+            code: ScmErrors.HttpError,
             message: 'Could not communicate with the server'
         }
     }
 
     static get loginError(): IScmError {
         return {
-            code: ScmErrors.LoginCode,
+            code: ScmErrors.LoginError,
             message: 'Invalid credentials'
         }
     }

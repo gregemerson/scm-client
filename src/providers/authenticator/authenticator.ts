@@ -116,7 +116,6 @@ export class Authenticator {
   }
 
   tryPreviousLogin(): Observable<IAuthUser> {
-    console.log('token is ' + this.token + ' uid is ' + this.uid);
     let hasLocalAuthData = (this.token != null && this.uid != null);
     if (!hasLocalAuthData) {
       return Observable.throw(ScmErrors.noLocalCredentials);
@@ -133,7 +132,10 @@ export class Authenticator {
       this.uid = loginData['userId'];
       return this.loadUser();
     }).catch((err: any) => {
-      return Observable.throw(ScmErrors.loginError);
+      if (err.code != ScmErrors.HttpError) {
+        return Observable.throw(ScmErrors.loginError);
+      }
+      return Observable.throw(err);
     });
   }
 

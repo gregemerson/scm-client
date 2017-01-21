@@ -19,6 +19,8 @@
 -- Table structure for table `accesstoken`
 --
 
+use scm_v1;
+
 DROP TABLE IF EXISTS `accesstoken`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
