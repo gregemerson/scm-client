@@ -17,9 +17,9 @@ export class ShareExerciseSetForm {
     private navCtrl: NavController, params: NavParams) {
       this.callback = <(initializer: Object) => void>params.get('callback');
       this.shareForm = this.formBuilder.group({
-        'email': new FormControl('', [
+        'receiverName': new FormControl('', [
           Validators.required, 
-          ScmValidators.email
+          ScmValidators.userName
           ]),
         'comments': new FormControl('', Validators.maxLength(
             this.constraints.maxSharedExerciseComments))

@@ -109,7 +109,7 @@ export class ExerciseSetPreviewPage {
   private presentToast(message: string) {
     this.toastCtrl.create({
       message: message,
-      duration: 3000
+      duration: 2500
     }).present();
   }
 
@@ -121,7 +121,7 @@ export class ExerciseSetPreviewPage {
           }
           this.exerciseSet.shareExerciseSet(initializer).subscribe({
             next: (result: Object) => {
-              this.presentToast('Shared with ' + initializer['email']);
+              this.presentToast('Shared with ' + initializer['username']);
             },
             error: (err: any) => {
               this.showMessages([MessagesPage.createMessage(

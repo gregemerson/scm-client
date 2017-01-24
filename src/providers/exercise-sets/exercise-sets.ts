@@ -13,7 +13,9 @@ export class ExerciseSets {
   currentExerciseSet: IExerciseSet;
   remainingExerciseSetCount: number;
   private user: IAuthUser;
-  items: Array<IExerciseSet>;
+  items: Array<IExerciseSet> = [];
+  shared: Array<ISharedExerciseSet> = [];
+  received: Array<ISharedExerciseSet> = [];
   
   constructor(private httpService: HttpService) {
   }
@@ -26,7 +28,6 @@ export class ExerciseSets {
 
   load(user: IAuthUser): Observable<void> {
     this.user = user;
-    this.items = [];
     this.currentExerciseSet = null;
     let currentId = user.settings.currentExerciseSet;
     let numberPrivateExerciseSets = 0;
@@ -40,6 +41,14 @@ export class ExerciseSets {
         this.currentExerciseSet = newSet;
       }
     }
+    // Load shared and received ExerciseSets
+    for (let key in this.user.rawSharedExerciseSets) {
+      this.shared.push(<ISharedExerciseSet>this.user.rawSharedExerciseSets[key]);
+    }
+    for (let key in this.user.rawReceivedExerciseSets) {
+      this.received.push(<ISharedExerciseSet>this.user.rawReceivedExerciseSets[key]);
+    }
+
     this.remainingExerciseSetCount = user.
       subscription['maxExerciseSets'] - numberPrivateExerciseSets;
     if (this.currentExerciseSet == null) {
@@ -122,6 +131,16 @@ export class ExerciseSets {
     }
     return null;
   }
+}
+
+export interface ISharedExerciseSet {
+  id: number;
+  receiverName: string;
+  sharerName: string;
+  date: Date;
+  name: string;
+  category: string;
+  comments: string;
 }
 
 export interface IExerciseSet {

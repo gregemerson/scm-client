@@ -1,4 +1,4 @@
-import {Component, OnChanges, isDevMode, ViewChild} from '@angular/core';
+import {Component, isDevMode, ViewChild} from '@angular/core';
 import {NavController, NavParams, ViewController} from 'ionic-angular';
 import {Authenticator, IAuthUser} from '../../providers/authenticator/authenticator';
 import {Validators, FormBuilder, FormGroup, FormControl} from '@angular/forms';
@@ -83,11 +83,6 @@ export class LoginPage {
     this.newPassword1Ctrl.setValue('');
     this.newPassword2Ctrl.setValue('');
     this.errorMessage.hide();
-  }
-
-  ngAfterViewInit() {
-    console.log('after view int called: ');
-    console.dir(this.errorMessage);
   }
 
   logIn() {

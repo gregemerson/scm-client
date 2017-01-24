@@ -1,5 +1,5 @@
 import {Component, ViewChild, isDevMode} from '@angular/core';
-import {NavController, ModalController, PopoverController, LoadingController, Loading} from 'ionic-angular';
+import {NavController, ModalController, ToastController, LoadingController, Loading} from 'ionic-angular';
 import {Authenticator, IAuthUserSettings} from '../../providers/authenticator/authenticator';
 import {ExerciseSetPreviewPage} from '../exercise-set-preview/exercise-set-preview';
 import {MessagesPage, IMessage, MessageType} from '../messages/messages';
@@ -12,44 +12,64 @@ import {SettingsConstraints} from '../../utilities/constraints';
 })
 export class SettingsPage {
   @ViewChild(MessageItem) messageItem: MessageItem;
-  settings: IAuthUserSettings;
+  authSettings: IAuthUserSettings;
   cnstr = new SettingsConstraints();
   isDirty = false;
-  isGuest = true;
-  minMaxTempos = {
-    lower: 0,
-    upper: 0
-  };
+  settings = {
+    numberOfRepititions: null,
+    tempoStep: null,
+    secondsBeforeStart: null,
+    upper: null,
+    lower: null
+  }
 
-  constructor(private nav: NavController, 
+  constructor(private nav: NavController,
+    private toaster: ToastController,
     private authenticator: Authenticator) {
-    this.settings = authenticator.user.settings;
-    this.minMaxTempos.lower = this.settings.minTempo;
-    this.minMaxTempos.upper = this.settings.maxTempo;
-    this.isGuest = this.authenticator.isGuest;
+    this.authSettings = authenticator.user.settings;
+    this.copySettings(false);
+  }
+
+  ngAfterViewInit() {
+    
+  }
+
+  private copySettings(localToAuth: boolean) {
+    let source = localToAuth ? this.settings : this.authSettings;
+    let target = localToAuth ? this.authSettings : this.settings;
+    for (let name in this.settings) {
+      let tName = name, sName = name;
+      tName = localToAuth && name == 'lower' ? 'minTempo' : name;
+      sName = !localToAuth && name == 'lower' ? 'minTempo' : name;
+      tName = localToAuth && name == 'upper' ? 'maxTempo' : name;
+      sName = !localToAuth && name == 'upper' ? 'maxTempo' : name;
+      target[tName] = source[sName];
+    }
   }
 
   onChange(event) {
     this.isDirty = true;
   }
 
-  saveClicked($event) {
-    this.settings.minTempo = this.minMaxTempos.lower;
-    this.settings.maxTempo = this.minMaxTempos.upper;
+  applySettings($event) {
+    this.copySettings(true);
+    if (this.authenticator.isGuest) {
+      return;
+    }
     this.authenticator.saveSettings()
       .subscribe({
         next: () => {
           this.messageItem.hide();
           this.isDirty = false;
+          this.toaster.create({
+              message: 'Settings saved successfully',
+              duration: 2500,
+              position: 'middle'
+            }).present();
         },
         error: (err: any) => {
           // err has type ScmError
-          if (isDevMode()) {
-            this.messageItem.show(err.toString())
-          }
-          else {
-            this.messageItem.show(err.message);
-          }
+          this.messageItem.show(err.message);
         }
       })
   }

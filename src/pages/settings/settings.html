@@ -11,40 +11,56 @@
 
 <ion-content padding>
   <ion-list>
-    <ion-item>
-      <ion-label>Min and Max Tempo</ion-label>
-      <ion-range [disabled]="isGuest" (onchange)="onChange($event)" dualKnobs="true" [(ngModel)]="minMaxTempos" min="cnstr.minTempo" max="cnstr.maxTempo" pin="true"></ion-range>
-      <ion-label range-left>{{ cnstr.minTempo }}</ion-label>
-      <ion-label range-right>{{ cnstr.maxTempo }}</ion-label>
-    </ion-item>
 
     <ion-item>
-      <ion-label>Tempo Step</ion-label>
-      <ion-range [disabled]="isGuest" (onchange)="onChange($event)" [(ngModel)]="settings.tempoStep"  [min]="cnstr.minStep" [max]="cnstr.maxStep" pin="true"></ion-range>
-      <ion-label range-left>{{ cnstr.minStep }}</ion-label>
-      <ion-label range-right>{{ cnstr.maxStep }}</ion-label>
-    </ion-item>
-
-    <ion-item>
-      <ion-range [disabled]="isGuest" (onchange)="onChange($event)" [(ngModel)]="settings.numberOfRepititions"  [min]="cnstr.minReps" [max]="cnstr.maxReps" pin="true"></ion-range>
-      <ion-label range-left>{{ cnstr.minReps }}</ion-label>
-      <ion-label range-right>{{ cnstr.maxReps }}</ion-label>
-    </ion-item>
-
-    <ion-item>
-      <ion-range [disabled]="isGuest" (onchange)="onChange($event)" [(ngModel)]="settings.secondsBeforeStart"  [min]="cnstr.minDelay" [max]="cnstr.maxDelay" pin="true"></ion-range>
-      <ion-label range-left>{{ cnstr.minDelay }}</ion-label>
-      <ion-label range-right>{{ cnstr.maxDelay }}</ion-label>
-    </ion-item>
-  </ion-list>
-
-  <ion-item>
       <ion-buttons start>
-          <button ion-button type="submit" [disabled]="!isDirty || isGuest" (click)="save()" color="primary" small>
-            <ion-icon name="checkmark-circle"></ion-icon>
+          <button ion-button type="submit" [disabled]="!isDirty" (click)="applySettings()" color="primary" small>
+            Apply Changes
           </button>
       </ion-buttons>
-  </ion-item>
+    </ion-item>
+
+    <ion-item-divider color="secondary">Min and Max Tempo
+      <ion-badge>{{ settings.lower }}</ion-badge>
+      <ion-badge>{{ settings.upper }}</ion-badge>
+    </ion-item-divider>
+    <ion-item>
+      <ion-range (ionChange)="onChange($event)" dualKnobs="true" [(ngModel)]="settings" [min]="cnstr.minTempo" [max]="cnstr.maxTempo">
+        <ion-label range-left>{{ cnstr.minTempo }}</ion-label>
+        <ion-label range-right>{{ cnstr.maxTempo }}</ion-label>
+      </ion-range>
+    </ion-item>
+
+    <ion-item-divider color="secondary">Tempo Step
+      <ion-badge>{{ settings.tempoStep }}</ion-badge>
+    </ion-item-divider>
+    <ion-item>
+      <ion-range (ionChange)="onChange($event)" [(ngModel)]="settings.tempoStep"  [min]="cnstr.minStep" [max]="cnstr.maxStep">
+        <ion-label range-left>{{ cnstr.minStep }}</ion-label>
+        <ion-label range-right>{{ cnstr.maxStep }}</ion-label>
+      </ion-range>
+    </ion-item>
+
+    <ion-item-divider color="secondary">Number of Repititions
+      <ion-badge>{{ settings.numberOfRepititions }}</ion-badge>
+    </ion-item-divider>
+    <ion-item>
+      <ion-range (ionChange)="onChange($event)" [(ngModel)]="settings.numberOfRepititions"  [min]="cnstr.minReps" [max]="cnstr.maxReps">
+        <ion-label range-left>{{ cnstr.minReps }}</ion-label>
+        <ion-label range-right>{{ cnstr.maxReps }}</ion-label>
+      </ion-range>
+    </ion-item>
+
+    <ion-item-divider color="secondary">Delay Start (in seconds)
+      <ion-badge>{{ settings.secondsBeforeStart }}</ion-badge>
+    </ion-item-divider>  
+    <ion-item>
+      <ion-range (ionChange)="onChange($event)" [(ngModel)]="settings.secondsBeforeStart"  [min]="cnstr.minDelay" [max]="cnstr.maxDelay">
+        <ion-label range-left>{{ cnstr.minDelay }}</ion-label>
+        <ion-label range-right>{{ cnstr.maxDelay }}</ion-label>
+      </ion-range>
+    </ion-item>
+  </ion-list>
 
   <message-item [isError]="true"></message-item>
 
