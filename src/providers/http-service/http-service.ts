@@ -10,6 +10,7 @@ import 'rxjs/add/operator/map';
 
 @Injectable()
 export class HttpService extends Observable<ScmErrorList> {
+  static timeout = 12000;
   static get ClientsCollection(): string {return this.addRoot('Clients/')}
   static get ClientLogin(): string {return this.addRoot('Clients/login')}
   static get newUser(): string {return this.addRoot('Clients/createNewUser')}
@@ -75,6 +76,7 @@ export class HttpService extends Observable<ScmErrorList> {
 
   postPersistedObject(url: string,  data: any, requestOptions = Authenticator.newRequestOptions()): Observable<Object> {
     return this.http.post(url, data, requestOptions)
+      .timeout(HttpService.timeout, ScmErrors.httpError)
       .map(response => this.processResponse(response))
       .catch((error: Response | any) => {
         this.debug(error, 'post');
@@ -84,6 +86,7 @@ export class HttpService extends Observable<ScmErrorList> {
 
   putPersistedObject(url: string,  data: any, requestOptions = Authenticator.newRequestOptions()): Observable<Object> {
     return this.http.put(url, data, requestOptions)
+      .timeout(HttpService.timeout, ScmErrors.httpError)
       .map(response => this.processResponse(response))
       .catch((error: Response | any) => {
         this.debug(error, 'put');
@@ -93,8 +96,11 @@ export class HttpService extends Observable<ScmErrorList> {
   
   getPersistedObject(url: string, requestOptions = Authenticator.newRequestOptions()): Observable<Object> {
     return this.http.get(url, requestOptions)
+      .timeout(HttpService.timeout, ScmErrors.httpError)
       .map(response => this.processResponse(response))
       .catch((error: Response | any) => {
+        console.log('error in get persisted: ')
+        console.dir(error)
         this.debug(error, 'get');
         return this.handleError(error);
       });
@@ -102,6 +108,7 @@ export class HttpService extends Observable<ScmErrorList> {
 
   deletePersistedObject(url: string, requestOptions = Authenticator.newRequestOptions()): Observable<Object> {
     return this.http.delete(url, requestOptions)
+      .timeout(HttpService.timeout, ScmErrors.httpError)
       .map(response => this.processResponse(response))
       .catch((error: Response | any) => {
         this.debug(error, 'delete');

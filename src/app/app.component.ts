@@ -43,7 +43,7 @@ export class StickControlMetronome {
     private metronome: Metronome) {
 
     platform.ready().then(() => {
-      this.authenticator.onUserLoaded = (user: IAuthUser) => {
+      this.authenticator.onUserLoaded.subscribe((user: IAuthUser) => {
         let loading = this.loadingCtrl.create();
         loading.present();
 
@@ -56,11 +56,11 @@ export class StickControlMetronome {
             this.login(err);
           }
         });
-      };
+      });
 
-      this.authenticator.onUserUnloaded = () => {
+      this.authenticator.onUserUnloaded.subscribe(() => {
         this.unloadUserData();
-      }
+      });
 
       // Listen for errors forcing navigation to login page
       this.httpService.subscribe(({next: (errors: ScmErrorList) => {
@@ -82,11 +82,19 @@ export class StickControlMetronome {
   }
 
   private tryPreviousLogin() {
+    let loading = this.loadingCtrl.create();
+    loading.present();
     this.authenticator.tryPreviousLogin()
     .subscribe({
       next: (user: IAuthUser) => {
+        console.log('good try previous')
+        console.dir(user)
+        loading.dismiss();
       },
       error: (err: any) => {
+        loading.dismiss();
+        console.log('error in try previous')
+        console.dir(err)
         // err of type IScmError
         if (err.code == ScmErrors.NoLocalCredentials) {
           this.login();
@@ -101,7 +109,9 @@ export class StickControlMetronome {
   // Goto login page
   private login(error: IScmError = null) {
     this.loginPushed = true;
-    this.nav.push(LoginPage, {error: error});
+    this.nav.push(LoginPage, {
+      error: error
+    });
   }
 
   loadServices(user: IAuthUser): Observable<void> {

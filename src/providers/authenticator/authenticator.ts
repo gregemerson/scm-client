@@ -3,7 +3,7 @@ import {Http, Headers, Response, RequestOptionsArgs} from '@angular/http';
 import {ExerciseSets} from '../exercise-sets/exercise-sets';
 import {HttpService} from '../http-service/http-service';
 import {Observable} from 'rxjs/Observable';
-import {Observer, Subscriber, Subscription} from "rxjs";
+import {Observer, Subscriber, Subscription, Subject} from "rxjs";
 import {ErrorObservable} from 'rxjs/observable/ErrorObservable';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/observable/throw';
@@ -23,8 +23,8 @@ export class Authenticator {
   constructor(private httpService: HttpService) {
   }
 
-  onUserLoaded: (user: IAuthUser) => void;
-  onUserUnloaded: () => void;
+  onUserLoaded = new Subject<IAuthUser>();
+  onUserUnloaded = new Subject();
 
   get user(): IAuthUser {
     return this._user;
@@ -51,12 +51,12 @@ export class Authenticator {
       this.token = null;
       this.uid = null;
       if (this.onUserUnloaded) {
-        this.onUserUnloaded();
+        this.onUserUnloaded.next();
       }
     }
     else {
       if (this.onUserLoaded) {
-        this.onUserLoaded(user);
+        this.onUserLoaded.next(user);
       }
     }
     this._user = user;
@@ -143,9 +143,12 @@ export class Authenticator {
     let url = HttpService.ClientsCollection + localStorage.getItem(
       Authenticator.uidKey) + this.userLoadFilter;
     return this.httpService.getPersistedObject(url).
-      flatMap((user: Object, index: number) => {
+      map((user: Object) => {
         this.setUser(new AuthUser(user));
-        return Observable.of(this.user);
+        return this.user;
+      })
+      .catch((err: any) => {
+        return Observable.throw('User not loaded');        
       });
   }
 
