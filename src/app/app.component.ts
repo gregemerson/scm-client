@@ -29,6 +29,7 @@ export class StickControlMetronome {
   ];
   rootPage: any = GuidePage;
   @ViewChild(Nav) nav: Nav;
+  @ViewChild(SettingsPage) settings: SettingsPage;
 
   loginPushed = false;
   servicesLoaded = false;
@@ -44,6 +45,7 @@ export class StickControlMetronome {
 
     platform.ready().then(() => {
       this.authenticator.onUserLoaded.subscribe((user: IAuthUser) => {
+        console.log('user loaded')
         let loading = this.loadingCtrl.create();
         loading.present();
 
@@ -81,20 +83,26 @@ export class StickControlMetronome {
     });
   }
 
+  ngAfterViewInit() {
+    console.log('user is ')
+    console.dir(this)
+    console.log('afterveiwinit')
+    if (this.authenticator.user) {
+      // When not called values all show up!!!
+      this.settings.onUserLoaded(this.authenticator.user);
+    }
+  }
+
   private tryPreviousLogin() {
     let loading = this.loadingCtrl.create();
     loading.present();
     this.authenticator.tryPreviousLogin()
     .subscribe({
       next: (user: IAuthUser) => {
-        console.log('good try previous')
-        console.dir(user)
         loading.dismiss();
       },
       error: (err: any) => {
         loading.dismiss();
-        console.log('error in try previous')
-        console.dir(err)
         // err of type IScmError
         if (err.code == ScmErrors.NoLocalCredentials) {
           this.login();
@@ -129,8 +137,6 @@ export class StickControlMetronome {
     })
     .retry(1)
     .catch((error: any, caught: Observable<any>) => {
-      console.log('load services failed: ');
-      console.dir(error);
       return Observable.throw(error);
     });
   }

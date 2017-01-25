@@ -50,14 +50,10 @@ export class Authenticator {
     if (user == null) {
       this.token = null;
       this.uid = null;
-      if (this.onUserUnloaded) {
-        this.onUserUnloaded.next();
-      }
+      this.onUserUnloaded.next();
     }
     else {
-      if (this.onUserLoaded) {
-        this.onUserLoaded.next(user);
-      }
+      this.onUserLoaded.next(user);
     }
     this._user = user;
   }
@@ -146,9 +142,6 @@ export class Authenticator {
       map((user: Object) => {
         this.setUser(new AuthUser(user));
         return this.user;
-      })
-      .catch((err: any) => {
-        return Observable.throw('User not loaded');        
       });
   }
 

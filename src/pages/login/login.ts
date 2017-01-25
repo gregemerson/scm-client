@@ -53,7 +53,9 @@ export class LoginPage {
 
     let err = <IScmError>navParams.get('error');
     if (err) {
-      this.handleError(err);
+      console.log('in error handler')
+      console.dir(err)
+      //this.handleError(err);
     }
 
     this.newUsernameCtrl = new FormControl('', [Validators.required, ScmValidators.userName]);

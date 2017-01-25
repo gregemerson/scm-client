@@ -31,25 +31,28 @@ export class SettingsPage {
     private toaster: ToastController,
     private changeDetector: ChangeDetectorRef,
     private authenticator: Authenticator) {
-      this.authenticator.onUserLoaded.subscribe((user: IAuthUser) => {
-        console.log('user loaded.....')
-        this.authSettings = user.settings;
-        this.copySettings(false);
-        this.changeDetector.detectChanges();
-      });
+      console.log('settings page constructed')
+      this.onUserLoaded(authenticator.user);
+  }
+
+  onUserLoaded(user: IAuthUser) {
+    this.authSettings = user.settings;
+    this.copySettings(false);
   }
 
   private copySettings(localToAuth: boolean) {
     let source = localToAuth ? this.settings : this.authSettings;
     let target = localToAuth ? this.authSettings : this.settings;
-    console.log('properties are: ');
-    for (let name in this.settings) {
-      console.log(name);
-      let tName = name, sName = name;
-      tName = localToAuth && name == 'lower' ? 'minTempo' : name;
-      sName = !localToAuth && name == 'lower' ? 'minTempo' : name;
-      tName = localToAuth && name == 'upper' ? 'maxTempo' : name;
-      sName = !localToAuth && name == 'upper' ? 'maxTempo' : name;
+    for (let localProp in this.settings) {
+      let tName = localProp, sName = localProp;
+      if (localProp == 'lower') {
+        tName = localToAuth ? 'minTempo' : tName;
+        sName = localToAuth ? sName : 'minTempo';
+      }
+      else if (localProp == 'upper') {
+        tName = localToAuth ? 'maxTempo' : tName;
+        sName = localToAuth ? sName : 'maxTempo';
+      }
       target[tName] = source[sName];
     }
   }
