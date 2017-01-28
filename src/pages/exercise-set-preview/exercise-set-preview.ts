@@ -1,5 +1,5 @@
-import {SimpleChanges, ChangeDetectorRef, Component, ViewChildren, ViewChild, ElementRef, QueryList, EventEmitter, Output} from '@angular/core';
-import {NavController, NavParams, LoadingController, Loading, ModalController, PopoverController, Content, ToastController} from 'ionic-angular';
+import {ChangeDetectorRef, Component, ViewChildren, ViewChild, ElementRef, QueryList, Output} from '@angular/core';
+import {NavController, NavParams, LoadingController, Loading, ModalController, PopoverController, Content} from 'ionic-angular';
 import * as ES from '../../providers/exercise-sets/exercise-sets';
 import {Authenticator} from '../../providers/authenticator/authenticator'
 import {ExerciseDisplay} from '../exercise-display/exercise-display';
@@ -12,6 +12,7 @@ import {WarningPage} from '../messages/warning';
 import {ExerciseSetSelectorPage} from './exercise-set-selector';
 import {ShareExerciseSetForm} from './share-exercise-set';
 import {Validators, FormBuilder, FormGroup, FormControl, FormsModule} from '@angular/forms';
+import {Toaster} from '../toaster/toaster';
 
 @Component({
   selector: 'exercise-set-preview',
@@ -30,7 +31,9 @@ export class ExerciseSetPreviewPage {
   editing = false;
   editIndex: number = null;
   exerciseSetDetails: string;
+  hideMenu = false;
   @ViewChild(Content) content: Content;
+  @ViewChild(Toaster) toaster: Toaster;
   @ViewChildren(ExerciseDisplay) displays: QueryList<ExerciseDisplay>;
   @ViewChildren('displayContainer') contents: QueryList<ElementRef>;
   private fontFactor = 1.75;
@@ -44,8 +47,7 @@ export class ExerciseSetPreviewPage {
     private modalCtrl: ModalController,
     private modal: ModalController,
     private popover: PopoverController,
-    private changeDetect: ChangeDetectorRef,
-    private toastCtrl: ToastController) {
+    private changeDetect: ChangeDetectorRef) {
   }
 
   onResize($event) {
@@ -90,6 +92,7 @@ export class ExerciseSetPreviewPage {
           this.exerciseSets.updateCurrentExerciseSetMetadata(formData).subscribe({
             next: () => {
               this.formatExerciseSetDetails();
+              this.toaster.present('Saved successfully')
             },
             error: (err: any) => {
               this.showMessages([MessagesPage.createMessage(
@@ -106,13 +109,6 @@ export class ExerciseSetPreviewPage {
     }).present();
   }
 
-  private presentToast(message: string) {
-    this.toastCtrl.create({
-      message: message,
-      duration: 2500
-    }).present();
-  }
-
   shareExerciseSet() {
     this.modalCtrl.create(ShareExerciseSetForm, {
       callback: (initializer: Object) => {
@@ -121,7 +117,7 @@ export class ExerciseSetPreviewPage {
           }
           this.exerciseSet.shareExerciseSet(initializer).subscribe({
             next: (result: Object) => {
-              this.presentToast('Shared with ' + initializer['username']);
+              this.toaster.present('Shared with ' + initializer['username']);
             },
             error: (err: any) => {
               this.showMessages([MessagesPage.createMessage(
@@ -304,6 +300,7 @@ export class ExerciseSetPreviewPage {
           save(exercise, fieldsToSave).subscribe({
             next: () => {
                 this.setEditMode(false);
+                this.toaster.present('Exercise saved successfully');
                 display.hideCursor();
                 loading.dismiss();
             },
@@ -314,9 +311,6 @@ export class ExerciseSetPreviewPage {
               let message = MessagesPage.createMessage(
                   'Error', err, MessageType.Error);
               this.showMessages([message]);
-            },
-            complete: () => {
-              console.log('complete was called');
             }
           });
       }, () => {
@@ -375,15 +369,11 @@ export class ExerciseSetPreviewPage {
     this.editing = editing;
     this.editIndex = editing ? editIndex : null;
     this.editor = !editing ? null : this.editor;
-    this.hideTabs(editing);
+    this.hideMainMenu(editing);
   }
 
-  private hideTabs(hide: boolean) {
-    let tabBarElement: any = document.querySelector('.tabbar.show-tabbar');
-    console.log('receiving onHideTabs');
-    let mode = hide ? 'none' : 'flex';
-    tabBarElement.style.height = 
-    tabBarElement.style.display = mode;
+  private hideMainMenu(hide: boolean) {
+    this.hideMenu = hide;
   }
 }
 

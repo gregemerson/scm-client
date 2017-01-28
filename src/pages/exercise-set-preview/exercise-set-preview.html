@@ -1,12 +1,14 @@
 <ion-header>
   <ion-navbar>
-    <button ion-button menuToggle>
+    <button ion-button menuToggle [hidden]="hideMenu">
       <ion-icon name="menu"></ion-icon>
     </button>
     <ion-title>Exercise Sets</ion-title>
     <app-buttons></app-buttons>
   </ion-navbar>
 </ion-header>
+
+<toaster></toaster>
 
 <ion-content padding (window:resize)="onResize($event)">
   <ion-list no-lines>

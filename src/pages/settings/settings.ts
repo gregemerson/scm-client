@@ -4,6 +4,7 @@ import {Authenticator, IAuthUser, IAuthUserSettings} from '../../providers/authe
 import {ExerciseSetPreviewPage} from '../exercise-set-preview/exercise-set-preview';
 import {MessagesPage, IMessage, MessageType} from '../messages/messages';
 import {MessageItem} from '../message-item/message-item';
+import {Toaster} from '../toaster/toaster'
 import {SettingsConstraints} from '../../utilities/constraints';
 
 class LocalSettings {
@@ -22,20 +23,18 @@ class LocalSettings {
 })
 export class SettingsPage {
   @ViewChild(MessageItem) messageItem: MessageItem;
+  @ViewChild(Toaster) toaster: Toaster;
   authSettings: IAuthUserSettings;
   cnstr = new SettingsConstraints();
   isDirty = false;
   settings = new LocalSettings();
 
   constructor(private nav: NavController,
-    private toaster: ToastController,
-    private changeDetector: ChangeDetectorRef,
     private authenticator: Authenticator) {
-      console.log('settings page constructed')
-      this.onUserLoaded(authenticator.user);
+      this.loadCurrentSettings(authenticator.user);
   }
 
-  onUserLoaded(user: IAuthUser) {
+  loadCurrentSettings(user: IAuthUser) {
     this.authSettings = user.settings;
     this.copySettings(false);
   }
@@ -71,11 +70,7 @@ export class SettingsPage {
         next: () => {
           this.messageItem.hide();
           this.isDirty = false;
-          this.toaster.create({
-              message: 'Settings saved successfully',
-              duration: 2500,
-              position: 'middle'
-            }).present();
+          this.toaster.present('Settings saved successfully');
         },
         error: (err: any) => {
           // err has type ScmError

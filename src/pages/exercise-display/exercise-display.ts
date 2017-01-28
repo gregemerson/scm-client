@@ -393,28 +393,29 @@ export class ExerciseDisplay {
     let noteWidth = this.getNoteWidth('XX');
     let startX = this.noteX;
     let endX = startX + noteWidth;
-    let halfHeight = (this.groupingY - this.accentPaddingY)/2;
-    let verticalCenter = this.groupingY - halfHeight;
+    let halfHeight = (this.graceNoteY - this.topPaddingY)/2;
+    let verticalCenter = this.graceNoteY - halfHeight;
     let context = this.getExerciseContext();
     // Draw divider
+    let offset = noteWidth * .1;
     context.lineWidth = 0.06 * this.selectedFontSize;
     context.beginPath();
-    context.moveTo(startX, verticalCenter);
-    context.lineTo(endX, verticalCenter);
+    context.strokeStyle = 'gray';
+    context.moveTo(startX + offset, this.graceNoteY - offset);
+    context.lineTo(endX - offset, this.topPaddingY + offset);
     context.stroke();   
     context.closePath();
     // Draw values
-    context.font = (0.8 * halfHeight) + this.exerciseFont;
+    context.strokeStyle = 'black';
+    let textHeight = 0.8 * halfHeight;
+    context.font = textHeight + this.exerciseFont;
     let top = repeat.numMeasures.toString();
     let bottom = repeat.numRepeats.toString()
-    let topWidth = context.measureText(repeat.numMeasures.toString()).width;
     let bottomWidth = context.measureText(repeat.numRepeats.toString()).width;
-    let offsetX = (noteWidth - context.measureText(top).width)/2; 
     context.textBaseline = 'top';
-    context.strokeText(top, startX + offsetX, this.accentY);
-    offsetX = (noteWidth - context.measureText(bottom).width)/2; 
+    context.strokeText(top, startX, this.topPaddingY);
     context.textBaseline = 'bottom';
-    context.strokeText(bottom, startX + offsetX, this.letterY);
+    context.strokeText(bottom, endX - bottomWidth, this.graceNoteY);
     return endPosition;
   }
 
@@ -429,8 +430,8 @@ export class ExerciseDisplay {
     let middleX = this.noteX + (noteWidth/2);
     context.lineWidth = noteWidth * 0.1;
     context.beginPath();
-    context.moveTo(middleX, this.accentPaddingY);
-    context.lineTo(middleX, this.groupingY);
+    context.moveTo(middleX, this.topPaddingY);
+    context.lineTo(middleX, this.graceNoteY);
     context.stroke();
     context.closePath();
     return this.setNoteEndPosition();

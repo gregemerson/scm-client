@@ -47,9 +47,9 @@ export class HttpService extends Observable<ScmErrorList> {
     return this.addRoot('Clients/' + clientId.toString() + '/sharedExerciseSets');
   }
 
-  private debug(err: any, op: string) {
+  private debug(err: any, op: string, url: string) {
     if (isDevMode()) {
-      console.log(op + ':');
+      console.log(op + ': ' + url);
       console.dir(err);
     }
   }
@@ -79,7 +79,7 @@ export class HttpService extends Observable<ScmErrorList> {
       .timeout(HttpService.timeout, ScmErrors.httpError)
       .map(response => this.processResponse(response))
       .catch((error: Response | any) => {
-        this.debug(error, 'post');
+        this.debug(error, 'post', url);
         return this.handleError(error);
       });
   }
@@ -89,7 +89,7 @@ export class HttpService extends Observable<ScmErrorList> {
       .timeout(HttpService.timeout, ScmErrors.httpError)
       .map(response => this.processResponse(response))
       .catch((error: Response | any) => {
-        this.debug(error, 'put');
+        this.debug(error, 'put', url);
         return this.handleError(error);
       }); 
   }
@@ -99,9 +99,7 @@ export class HttpService extends Observable<ScmErrorList> {
       .timeout(HttpService.timeout, ScmErrors.httpError)
       .map(response => this.processResponse(response))
       .catch((error: Response | any) => {
-        console.log('error in get persisted: ')
-        console.dir(error)
-        this.debug(error, 'get');
+        this.debug(error, 'get', url);
         return this.handleError(error);
       });
   }
@@ -111,7 +109,7 @@ export class HttpService extends Observable<ScmErrorList> {
       .timeout(HttpService.timeout, ScmErrors.httpError)
       .map(response => this.processResponse(response))
       .catch((error: Response | any) => {
-        this.debug(error, 'delete');
+        this.debug(error, 'delete', url);
         return this.handleError(error);
       });
   }

@@ -17,7 +17,7 @@ import {ScmErrors, ScmErrorList, IScmError} from '../utilities/errors';
 
 @Component({
   templateUrl: 'app.html',
-  providers: [Metronome, AudioBuffers, ExerciseSets, Authenticator, ModalController, PopoverController, HttpService]
+  providers: [Metronome, AudioBuffers, ExerciseSets, Authenticator, HttpService]
 })
 export class StickControlMetronome {
   // Set up pages
@@ -45,7 +45,6 @@ export class StickControlMetronome {
 
     platform.ready().then(() => {
       this.authenticator.onUserLoaded.subscribe((user: IAuthUser) => {
-        console.log('user loaded')
         let loading = this.loadingCtrl.create();
         loading.present();
 
@@ -83,16 +82,17 @@ export class StickControlMetronome {
     });
   }
 
+/*
   ngAfterViewInit() {
     console.log('user is ')
     console.dir(this)
     console.log('afterveiwinit')
     if (this.authenticator.user) {
       // When not called values all show up!!!
-      this.settings.onUserLoaded(this.authenticator.user);
+      this.settings.loadCurrentSettings(this.authenticator.user);
     }
   }
-
+*/
   private tryPreviousLogin() {
     let loading = this.loadingCtrl.create();
     loading.present();

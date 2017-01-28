@@ -31,10 +31,6 @@ export class NewExerciseSetForm {
       });
   }
 
-  ionViewLoaded() {
-
-  }
-
   create() {
     this.callback(this.newExerciseSet.value);
     this.navCtrl.pop();

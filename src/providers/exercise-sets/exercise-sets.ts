@@ -135,8 +135,7 @@ export class ExerciseSets {
 
 export interface ISharedExerciseSet {
   id: number;
-  receiverName: string;
-  sharerName: string;
+  username: string;
   date: Date;
   name: string;
   category: string;
@@ -187,7 +186,6 @@ class ExerciseSet implements IExerciseSet {
       this.disabledExercises[<number>exerciseId] = true;
     }
     this._isOwner = isOwner;
-    console.log('is owner ' + this.isOwner);
   }
 
   get isOwner(): boolean {
@@ -598,8 +596,6 @@ export class Encoding {
         ];
     }
 
-    // Infinite loop for #rlrl r-lr lrl- rlr-|lrlr|<1:3>|lrlr l-rl rlr- lrl-|rlrl|<1:3>
-
     while (encodedIndex < encoded.length) {
       // Move to the playable portion of the display
       if (!beginExercise) {
@@ -702,7 +698,7 @@ export class Repeat extends ExerciseElement {
     if (encoding[index] == Encoding.repeatStart) {
       let start = index;
       let end = encoding.indexOf(Encoding.repeatEnd, index);
-      let components = encoding.substring(start + 1, end - 1).
+      let components = encoding.substring(start + 1, end).
           split(Encoding.repeatDivider);
       let repeat = new Repeat();
       repeat.numMeasures = parseInt(components[0]);

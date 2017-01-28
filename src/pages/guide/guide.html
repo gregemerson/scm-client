@@ -9,4 +9,37 @@
 
 <ion-content padding>
 
+  <ion-card>
+    <ion-card-content fancy-text>
+      This is the introduction page! Below, you will find list of exercise set that others have shared with you. There is also a list of
+      exercise sets you have shared but that have not been accepted by the recipient. 
+    </ion-card-content>
+  </ion-card>
+
+  <ion-segment [(ngModel)]="whichSet">
+    <ion-segment-button value="received">
+      Received
+    </ion-segment-button>
+    <ion-segment-button value="shared">
+      Shared
+    </ion-segment-button>
+  </ion-segment>
+
+  <div [ngSwitch]="whichSet">
+
+    <ion-list *ngSwitchCase="'received'">
+      <ion-list-header>Exercise sets shared with you</ion-list-header>
+      <ion-item *ngFor="let set of receivedExerciseSets; let idx = index">
+        {{ set.name }}
+      </ion-item>
+    </ion-list>
+
+    <ion-list *ngSwitchCase="'shared'">
+      <ion-list-header>Exercise sets you have shared</ion-list-header>
+      <ion-item *ngFor="let set of sharedExerciseSets; let idx = index">
+        {{ set.name }}
+      </ion-item>
+    </ion-list>
+
+  </div>
 </ion-content>

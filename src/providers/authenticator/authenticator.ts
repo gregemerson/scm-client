@@ -16,7 +16,7 @@ import {ScmErrors} from '../../utilities/errors'
 export class Authenticator {
   private static tokenKey = 'auth_token';
   private static uidKey = 'uid';
-  private userLoadFilter = '?filter[include]=userSettings&filter[include]=exerciseSets&filter[include]=subscription&filter[include]=sharedExerciseSets&filter[include]=receivedExerciseSets';
+  private userLoadFilter = '?filter[include]=userSettings&filter[include]=exerciseSets&filter[include]=subscription';
   private _user: IAuthUser = null;
   errors: Object;
 

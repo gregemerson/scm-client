@@ -1,8 +1,6 @@
 import {NgModule} from '@angular/core';
 import {IonicApp, IonicModule, ModalController, PopoverController} from 'ionic-angular';
 import {StickControlMetronome} from './app.component';
-import {AboutPage} from '../pages/about/about';
-import {ContactPage} from '../pages/contact/contact';
 import {HomePage} from '../pages/home/home';
 import {CountDownPage} from '../pages/countdown/countdown';
 import {ExerciseDisplay} from '../pages/exercise-display/exercise-display';
@@ -23,13 +21,12 @@ import {NewExerciseForm} from '../pages/exercise-set-preview/new-exercise';
 import {ShareExerciseSetForm} from '../pages/exercise-set-preview/share-exercise-set';
 import {RepeatForm} from '../pages/exercise-set-preview/repeat';
 import {AppButtons} from '../pages/app-buttons/app-buttons';
-import {MessageItem} from '../pages/message-item/message-item'
+import {MessageItem} from '../pages/message-item/message-item';
+import {Toaster} from '../pages/toaster/toaster';
 
 @NgModule({
   declarations: [
     StickControlMetronome,
-    AboutPage,
-    ContactPage,
     HomePage,
     CountDownPage,
     ExerciseDisplay,
@@ -45,7 +42,8 @@ import {MessageItem} from '../pages/message-item/message-item'
     ShareExerciseSetForm,
     NewExerciseForm,
     AppButtons,
-    MessageItem
+    MessageItem,
+    Toaster
   ],
   imports: [
     IonicModule.forRoot(StickControlMetronome, {prodMode: false})
@@ -53,8 +51,6 @@ import {MessageItem} from '../pages/message-item/message-item'
   bootstrap: [IonicApp],
   entryComponents: [
     StickControlMetronome,
-    AboutPage,
-    ContactPage,
     HomePage,
     CountDownPage,
     ExerciseDisplay,
