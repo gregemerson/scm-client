@@ -86,9 +86,14 @@ ion-title {
   font-size: 1.4rem;
 }
 
+.sized-modal {
+  height: auto !important;
+}
+
 $alert-ios-radio-label-padding: 7px;
 $alert-md-radio-label-padding: 7px 26px;
 $alert-wp-radio-label-padding: 7px 26px;
+$modal-inset-height-small: 250px;
 
 // App Theme
 // --------------------------------------------------
@@ -106,4 +111,4 @@ $alert-wp-radio-label-padding: 7px 26px;
 // http://ionicframework.com/docs/v2/ionicons/
 
 $ionicons-font-path: "../assets/fonts";
-@import "ionicons";
+@import "ionic.ionicons";

@@ -174,7 +174,7 @@ export class HomePage {
         this.topContainer.nativeElement).fontSize);
     let bottomFontSize = 1.5 * Number.parseInt(getComputedStyle(
         this.bottomContainer.nativeElement).fontSize);
-    let maxHeight = this.content.height() * 0.4;
+    let maxHeight = this.content.contentHeight * 0.4;
     this.topDisplayState.draw(maxHeight, topFontSize);
     this.bottomDisplayState.draw(maxHeight, bottomFontSize);
     this.topContainer.nativeElement.height = this.topDisplayState.height;
