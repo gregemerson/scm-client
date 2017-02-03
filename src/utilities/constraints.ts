@@ -16,6 +16,7 @@ export class ExerciseConstraints {
   readonly maxExerciseSetCommentsLength = 200;
   readonly maxSharedExerciseComments = 100;
   readonly maxExercisesPerSet = 24;
+  readonly maxEncodingLength = 600;
 }
 
 export class SettingsConstraints {
@@ -27,4 +28,13 @@ export class SettingsConstraints {
   readonly maxReps = 100;
   readonly minDelay = 0;
   readonly maxDelay = 60;
+}
+
+export class SharingMessages {
+  // Reciever accepted your shared set
+  static ShareAccepted = 'ShareAccepted';
+  // Receiver rejected your shared set
+  static ShareRejected = 'ShareRejected';
+  // Someone has shared an exercise set with user
+  static NewShare = 'NewShare';
 }

@@ -7,13 +7,13 @@ import * as ES from '../../providers/exercise-sets/exercise-sets';
   styles: [
     `.exercise-canvas {
         z-index: 2;
-        border-style: solid;
+        border-style: none;
         border-color: green;       
      }`,
     `.cursor-canvas {
         z-index: 3;
         position: absolute;
-        border-style: dotted;
+        border-style: none;
         border-color: red;
      }`
   ],

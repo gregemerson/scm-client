@@ -5,8 +5,16 @@ import {HttpService} from '../../providers/http-service/http-service';
 import {Observable} from 'rxjs/Observable';
 import {Observer} from "rxjs";
 import {ErrorObservable} from 'rxjs/observable/ErrorObservable';
+import {Config} from '../../utilities/config'
 import 'rxjs/add/operator/map';
 import 'rxjs/add/observable/throw';
+import * as io from 'socket.io-client';
+import {SharingMessages} from '../../utilities/constraints';
+
+export enum ShareListType {
+  Shared,
+  Received
+}
 
 @Injectable()
 export class ExerciseSets {
@@ -16,6 +24,7 @@ export class ExerciseSets {
   items: Array<IExerciseSet> = [];
   shared: Array<ISharedExerciseSet> = [];
   received: Array<ISharedExerciseSet> = [];
+  sharingSocket: SocketIOClient.Socket;
   
   constructor(private httpService: HttpService) {
   }
@@ -48,7 +57,7 @@ export class ExerciseSets {
     for (let key in this.user.rawReceivedExerciseSets) {
       this.received.push(<ISharedExerciseSet>this.user.rawReceivedExerciseSets[key]);
     }
-
+    this.listenForShareEvents();
     this.remainingExerciseSetCount = user.
       subscription['maxExerciseSets'] - numberPrivateExerciseSets;
     if (this.currentExerciseSet == null) {
@@ -58,6 +67,43 @@ export class ExerciseSets {
       return (<ExerciseSet>this.currentExerciseSet).
         loadExercises(this.httpService, user);
     }
+  }
+
+  // Receive notifications when users share or unshare
+  // exercise sets with the user.
+  private listenForShareEvents() {
+    this.sharingSocket = io(Config.serverRoot);
+    this.sharingSocket.on(SharingMessages.ShareAccepted, (share: ISharedExerciseSet) => {
+      this.removeFromSharingList(share, ShareListType.Shared);
+    });
+    this.sharingSocket.on(SharingMessages.ShareRejected, (share: ISharedExerciseSet) => {
+      this.removeFromSharingList(share, ShareListType.Shared);
+    }); 
+    this.sharingSocket.on(SharingMessages.NewShare, (share: ISharedExerciseSet) => {
+      this.addToSharingList(share, ShareListType.Received);
+    }); 
+  }
+
+  private getSharingList(which: ShareListType) {
+    return which == ShareListType.Received ? this.received : this.shared;
+  }
+
+  private setSharingList(newList: ISharedExerciseSet[], which: ShareListType) {
+    return which == ShareListType.Received ? this.received : this.shared;
+  }  
+
+  private removeFromSharingList(share: ISharedExerciseSet, which: ShareListType) {
+      let list = this.getSharingList(which);
+      for (let idx = 0; idx < list.length; idx++) {
+        if (list[idx].username == share.username && list[idx].name == share.name) {
+          this.setSharingList(list.splice(idx, 1), which);
+        }
+      }
+  }
+
+  private addToSharingList(share: ISharedExerciseSet, which: ShareListType) {
+    let list = this.getSharingList(which);
+    list.push(share);
   }
 
   newExerciseSet(initializer: Object): Observable<number> {

@@ -1,6 +1,6 @@
 <ion-header>
   <ion-navbar>
-    <button ion-button menuToggle [hidden]="hideMenu">
+    <button ion-button menuToggle="main" [hidden]="hideMenu">
       <ion-icon name="menu"></ion-icon>
     </button>
     <ion-title>Exercise Sets</ion-title>
@@ -10,33 +10,37 @@
 
 <toaster></toaster>
 
-<ion-content padding (window:resize)="onResize($event)">
-  <ion-list no-lines>
-    <ion-list-header class="remaining-exercise-sets" [hidden]="authenticator.isGuest">
-      You can create {{ exerciseSets.remainingExerciseSetCount }} more exercise set(s)
-    </ion-list-header>
-    <ion-card [hidden]="!exerciseSet">
-        <ion-card-header>{{ exerciseSet?.name }}</ion-card-header>
-        <ion-card-content>{{ exerciseSetDetails }}</ion-card-content>
-    </ion-card>
-    <ion-item>
-      <ion-buttons>
-        <button ion-button (click)="selectExerciseSet()" [disabled]="editing" color="primary" outline small>Select Set</button>
-        <button ion-button (click)="newExerciseSet()" [hidden]="authenticator.isGuest" [disabled]="editing || exerciseSets.remainingExerciseSetCount == 0" color="primary" outline small>New Set</button>
-        <button ion-button (click)="updateExerciseSetMetadata()" [hidden]="!exerciseSet || !exerciseSet.isOwner" [disabled]="editing" color="primary" outline small>Edit Set</button>
-        <button ion-button (click)="deleteExerciseSet()" [hidden]="!exerciseSet || !exerciseSet.isOwner" [disabled]="editing" color="danger" outline small>Remove Set</button>
-        <button ion-button (click)="newExercise()" [hidden]="!exerciseSet || !exerciseSet.isOwner" [disabled]="editing" color="primary" outline small>New Exercise</button>
-        <button ion-button (click)="shareExerciseSet()" [hidden]="!exerciseSet || authenticator.isGuest" [disabled]="editing" color="primary" outline small>Share Set</button> 
-      </ion-buttons>
-    </ion-item>
-  </ion-list>
+<ion-content padding (window:resize)="onResize($event)" #actionsContent>
+
+  <ion-fab top center>
+    <button ion-fab color="secondary" [disabled]="editing" small>Actions</button>
+    <ion-fab-list slide="bottom">
+      <button ion-button (click)="selectExerciseSet()" [disabled]="editing" color="primary" round small>Select</button>
+      <button ion-button (click)="newExerciseSet()" [hidden]="authenticator.isGuest" [disabled]="editing || exerciseSets.remainingExerciseSetCount == 0" color="primary" round small>New</button>
+      <button ion-button (click)="updateExerciseSetMetadata()" [hidden]="!exerciseSet || !exerciseSet.isOwner" [disabled]="editing" color="primary" round small>Edit</button>
+      <button ion-button (click)="deleteExerciseSet()" [hidden]="!exerciseSet || !exerciseSet.isOwner" [disabled]="editing" color="danger" round small>Remove</button>
+      <button ion-button (click)="newExercise()" [hidden]="!exerciseSet || !exerciseSet.isOwner" [disabled]="editing" color="primary" round small>Exercise</button>
+      <button ion-button (click)="shareExerciseSet()" [hidden]="!exerciseSet || authenticator.isGuest" [disabled]="editing" color="primary" round small>Share</button> 
+    </ion-fab-list>
+  </ion-fab>
+
+  <ion-card [hidden]="!exerciseSet">
+      <ion-card-header>{{ exerciseSet?.name }}</ion-card-header>
+      <ion-card-content>{{ exerciseSetDetails }} You can create {{ exerciseSets.remainingExerciseSetCount }} more exercise set(s)</ion-card-content>
+  </ion-card>
+
   <ion-list>
     <ion-item *ngFor="let exercise of exercises; let idx = index">
+      <div [hidden]="editIndex == idx">
+        {{ (exercise.name ? exercise.name : '') }}
+      </div>
+      <!--
       <div [hidden]="editIndex == idx">
         {{ (exercise.name ? exercise.name : '') +
           (exercise.category ? (' (' + exercise.category + ')') : '')  +
           (exercise.comments ? (': ' + exercise.comments) : '') }}
       </div>
+      -->
       <div #displayContainer class="exercise-container" [class.editing-on]="editIndex == idx">
         <exercise-display #exerciseDisplay></exercise-display>
       </div> 

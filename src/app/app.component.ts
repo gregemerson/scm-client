@@ -25,7 +25,7 @@ export class StickControlMetronome {
     { title: 'Welcome', component: GuidePage },
     { title: 'Settings', component: SettingsPage },
     { title: 'Play', component: HomePage },
-    { title: 'Exercises', component: ExerciseSetPreviewPage }
+    { title: 'Exercise Sets', component: ExerciseSetPreviewPage }
   ];
   rootPage: any = GuidePage;
   @ViewChild(Nav) nav: Nav;
