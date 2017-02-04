@@ -215,8 +215,6 @@ export interface IAuthUser {
   email: string;
   emailVerified: boolean;
   rawExerciseSets: Array<Object>;
-  rawSharedExerciseSets: Array<Object>;
-  rawReceivedExerciseSets: Array<Object>;
   subscription: Object;
 }
 
@@ -228,8 +226,6 @@ class AuthUser implements IAuthUser {
   email: string;
   emailVerified: boolean;
   rawExerciseSets: Array<Object>;
-  rawReceivedExerciseSets: Array<Object>;
-  rawSharedExerciseSets: Array<Object>;
   subscription: Object;
   
   constructor(rawUser: Object) {
@@ -237,8 +233,6 @@ class AuthUser implements IAuthUser {
     this.settings = new AuthUserSettings(rawUser['userSettings']);
     this.membershipEnds = new Date(rawUser['membershipExpiry']);
     this.rawExerciseSets = rawUser['exerciseSets'];
-    this.rawReceivedExerciseSets = rawUser['receivedExerciseSets'];
-    this.rawSharedExerciseSets = rawUser['sharedExerciseSets'];
     this.subscription = rawUser['subscription'];
   }
 }
