@@ -30,11 +30,6 @@ export class SettingsConstraints {
   readonly maxDelay = 60;
 }
 
-export class SharingMessages {
-  // Reciever accepted your shared set
-  static ShareAccepted = 'ShareAccepted';
-  // Receiver rejected your shared set
-  static ShareRejected = 'ShareRejected';
-  // Someone has shared an exercise set with user
-  static NewShare = 'NewShare';
+export class Constraints {
+  static ShareCheckInterval = 1000 * 60 * 3;
 }

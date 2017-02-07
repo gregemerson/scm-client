@@ -13,6 +13,7 @@ import {ExerciseSetSelectorPage} from './exercise-set-selector';
 import {ShareExerciseSetForm} from './share-exercise-set';
 import {Validators, FormBuilder, FormGroup, FormControl, FormsModule} from '@angular/forms';
 import {Toaster} from '../toaster/toaster';
+import {MessageItem} from '../message-item/message-item';
 
 @Component({
   selector: 'exercise-set-preview',
@@ -36,8 +37,10 @@ export class ExerciseSetPreviewPage {
   @ViewChild(Toaster) toaster: Toaster;
   @ViewChildren(ExerciseDisplay) displays: QueryList<ExerciseDisplay>;
   @ViewChildren('displayContainer') contents: QueryList<ElementRef>;
+  @ViewChild(MessageItem) errorDisplay: MessageItem;
   private fontFactor = 1.75;
   private saveFields = ['notation', 'name', 'category', 'comments'];
+  private loading: Loading;
 
   constructor(private navCtrl: NavController, 
     public exerciseSets: ES.ExerciseSets,
@@ -82,6 +85,28 @@ export class ExerciseSetPreviewPage {
         exerciseSets: this.exerciseSets.items
       }).present();
   }
+
+  private dismissLoading() {
+    if (this.loading) {
+      this.loading.dismiss();
+    }
+    this.loading = null;   
+  }
+
+  private onSuccessfulOperations(message: string = null) {
+    if (message) {
+      this.toaster.present(message);
+    }
+    this.errorDisplay.hide();
+    this.dismissLoading();
+  }
+
+  private onFailedOperation(message: string = null) {
+    if (message) {
+      this.errorDisplay.show(message);
+    }
+    this.dismissLoading();
+  }
   
   updateExerciseSetMetadata() {
     this.modalCtrl.create(NewExerciseSetForm, {
@@ -92,12 +117,10 @@ export class ExerciseSetPreviewPage {
           this.exerciseSets.updateCurrentExerciseSetMetadata(formData).subscribe({
             next: () => {
               this.formatExerciseSetDetails();
-              this.toaster.present('Saved successfully')
+              this.onSuccessfulOperations('Saved successfully');
             },
             error: (err: any) => {
-              this.showMessages([MessagesPage.createMessage(
-                'Error', 'Could not edit exercise set.', MessageType.Error
-              )]);
+              this.onFailedOperation('Could not edit exercise set.');
             }
           });
       },
@@ -117,12 +140,10 @@ export class ExerciseSetPreviewPage {
           }
           this.exerciseSet.shareExerciseSet(initializer).subscribe({
             next: (result: Object) => {
-              this.toaster.present('Shared with ' + initializer['username']);
+              this.onSuccessfulOperations('Shared with ' + initializer['username']);
             },
             error: (err: any) => {
-              this.showMessages([MessagesPage.createMessage(
-                'Error', 'Could not share exercise set.', MessageType.Error
-              )]);
+              this.onFailedOperation('Could not share exercise set');
             }
           });
       }
@@ -138,11 +159,10 @@ export class ExerciseSetPreviewPage {
           this.exerciseSets.newExerciseSet(formData).subscribe({
             next: (setId: number) => {
               this.changeCurrentExerciseSet(setId);
+              this.onSuccessfulOperations();
             },
             error: (err: any) => {
-              this.showMessages([MessagesPage.createMessage(
-                'Error', 'Could not create exercise set.', MessageType.Error
-              )]);
+              this.onFailedOperation('Could not create exercise set');
             }
           });
       }
@@ -170,11 +190,10 @@ export class ExerciseSetPreviewPage {
               }  
               this.exercises.push(exercise);
               this.content.scrollToBottom();
+              this.onSuccessfulOperations();
             },
             error: (err: any) => {
-              this.showMessages([MessagesPage.createMessage(
-                'Error', 'Could not create exercise set.', MessageType.Error
-              )]);
+              this.onFailedOperation('Could not create exercise set');
             }
           });
       }
@@ -183,19 +202,16 @@ export class ExerciseSetPreviewPage {
 
   changeCurrentExerciseSet(exerciseSetId: number) {
     this.changeDetect.detectChanges();
-    let loading = this.showLoading();
+    this.loading = this.showLoading();
     this.exerciseSets.setCurrentExerciseSet(exerciseSetId).subscribe(
       (x: any) => {
-        loading.dismiss();
         this.assignExerciseSet();
         this.loadExercises();
         this.formatExerciseSetDetails();
+        this.onSuccessfulOperations();
       },
       (error: any) => {
-        loading.dismiss();
-        this.modal.create(MessagesPage, {
-          messages: [MessagesPage.createMessage('Error', error, MessageType.Error)]
-        }).present();
+        this.onFailedOperation('Could not change exercise set');
       }
     )
   }
@@ -362,7 +378,14 @@ export class ExerciseSetPreviewPage {
   }
 
   removeExerciseSet() {
-
+    this.exerciseSets.removeCurrentExerciseSet().subscribe({
+      next: () => {
+        this.onSuccessfulOperations();
+      },
+      error: (err: any) => {
+        this.onFailedOperation('Could not remove exercise set0');
+      }
+    });
   }
 
   setEditMode(editing: boolean, editIndex?: number) {

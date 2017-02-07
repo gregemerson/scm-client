@@ -5,7 +5,8 @@ import {HttpService} from '../../providers/http-service/http-service';
 import {Observable} from 'rxjs/Observable';
 import {Observer} from "rxjs";
 import {ErrorObservable} from 'rxjs/observable/ErrorObservable';
-import {Config} from '../../utilities/config'
+import {Config} from '../../utilities/config';
+import {Constraints} from '../../utilities/constraints';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/observable/throw';
 
@@ -49,6 +50,7 @@ export class ExerciseSets {
     }
     return this.getShareLists(false)
       .map(() => {
+        this.pollForReceivedExerciseSets();
         this.remainingExerciseSetCount = user.
           subscription['maxExerciseSets'] - numberPrivateExerciseSets;
         if (this.currentExerciseSet == null) {
@@ -65,21 +67,24 @@ export class ExerciseSets {
     return this.httpService.getPersistedObject(HttpService.shareLists(this.user.id, receivedOnly))
     .map((result) => {
       // Load shared and received ExerciseSets
+      let sharedList = result['lists']['shared'];
+      let receivedList = result['lists']['received'];
       if (!receivedOnly) {
         this.shared = [];
-        for (let key in result['shared']) {
-          this.shared.push(<ISharedExerciseSet>result['shared'][key]);
+        for (let key in sharedList) {
+          this.shared.push(<ISharedExerciseSet>sharedList[key]);
         }
       }
       this.received = [];
-      for (let key in result['received']) {
-        this.received.push(<ISharedExerciseSet>result['received'][key]);
+      for (let key in receivedList) {
+        this.received.push(<ISharedExerciseSet>receivedList[key]);
       }
     });
   }
 
   private pollForReceivedExerciseSets() {
-    
+  Observable.interval(Constraints.ShareCheckInterval).
+    subscribe((value) => this.getShareLists(true));
   }
 
   private getSharingList(which: ShareListType) {
@@ -180,7 +185,7 @@ export class ExerciseSets {
 export interface ISharedExerciseSet {
   id: number;
   username: string;
-  date: Date;
+  public: boolean;
   name: string;
   category: string;
   comments: string;

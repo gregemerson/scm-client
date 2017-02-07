@@ -20,6 +20,7 @@ export class GuidePage {
       this.sharedExerciseSets = exerciseSets.shared;
       this.receivedExerciseSets = exerciseSets.received;
       this.whichSet = GuidePage.ReceivedType;
+      console.log('hello from guide')
+      console.dir(this.receivedExerciseSets);
   }
-
 }

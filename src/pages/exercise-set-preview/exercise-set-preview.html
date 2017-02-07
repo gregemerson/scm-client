@@ -18,7 +18,7 @@
       <button ion-button (click)="selectExerciseSet()" [disabled]="editing" color="primary" round small>Select</button>
       <button ion-button (click)="newExerciseSet()" [hidden]="authenticator.isGuest" [disabled]="editing || exerciseSets.remainingExerciseSetCount == 0" color="primary" round small>New</button>
       <button ion-button (click)="updateExerciseSetMetadata()" [hidden]="!exerciseSet || !exerciseSet.isOwner" [disabled]="editing" color="primary" round small>Edit</button>
-      <button ion-button (click)="deleteExerciseSet()" [hidden]="!exerciseSet || !exerciseSet.isOwner" [disabled]="editing" color="danger" round small>Remove</button>
+      <button ion-button (click)="removeExerciseSet()" [hidden]="!exerciseSet || !exerciseSet.isOwner" [disabled]="editing" color="danger" round small>Remove</button>
       <button ion-button (click)="newExercise()" [hidden]="!exerciseSet || !exerciseSet.isOwner" [disabled]="editing" color="primary" round small>Exercise</button>
       <button ion-button (click)="shareExerciseSet()" [hidden]="!exerciseSet || authenticator.isGuest" [disabled]="editing" color="primary" round small>Share</button> 
     </ion-fab-list>
@@ -65,6 +65,7 @@
       </ion-buttons>
     </ion-item>
   </ion-list>
+  <message-item isError="true"></message-item>
 </ion-content>
 
 <ion-footer [hidden]="!editing">
