@@ -200,15 +200,19 @@ export class ExerciseSetPreviewPage {
     }).present();    
   }
 
+  private onChangedExerciseSet() {
+    this.assignExerciseSet();
+    this.loadExercises();
+    this.formatExerciseSetDetails();
+  }
+
   changeCurrentExerciseSet(exerciseSetId: number) {
     this.changeDetect.detectChanges();
     this.loading = this.showLoading();
     this.exerciseSets.setCurrentExerciseSet(exerciseSetId).subscribe(
       (x: any) => {
-        this.assignExerciseSet();
-        this.loadExercises();
-        this.formatExerciseSetDetails();
         this.onSuccessfulOperations();
+        this.onChangedExerciseSet();
       },
       (error: any) => {
         this.onFailedOperation('Could not change exercise set');
@@ -222,9 +226,9 @@ export class ExerciseSetPreviewPage {
 
   ngAfterViewInit() {
     this.contents.changes.subscribe((changes: any) => this.displayExercises());
-    this.assignExerciseSet();
-    this.formatExerciseSetDetails();
-    this.loadExercises();
+    this.exerciseSets.notifyOnReady(() => {
+        this.onChangedExerciseSet();
+    });
   }
 
   private loadExercises() {
@@ -346,18 +350,6 @@ export class ExerciseSetPreviewPage {
     this.setEditMode(false);
   }
 
-  deleteExerciseSet() {
-    this.exerciseSets.removeCurrentExerciseSet().subscribe({
-      next: () => {
-        console.log('ok ');
-      },
-      error: (err: any) => {
-        console.log('error ');
-        console.dir(err);
-      }
-    });
-  }
-
   deleteExercise(idx: number) {
     this.popover.create(WarningPage, {
       message: 'Do you want to permanantly delete this exercise?',
@@ -381,9 +373,10 @@ export class ExerciseSetPreviewPage {
     this.exerciseSets.removeCurrentExerciseSet().subscribe({
       next: () => {
         this.onSuccessfulOperations();
+        this.onChangedExerciseSet();
       },
       error: (err: any) => {
-        this.onFailedOperation('Could not remove exercise set0');
+        this.onFailedOperation('Could not remove exercise set');
       }
     });
   }

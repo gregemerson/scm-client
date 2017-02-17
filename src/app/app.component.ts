@@ -1,4 +1,4 @@
-import {Component, ViewChild} from '@angular/core';
+import {Component, ViewChild, ChangeDetectorRef} from '@angular/core';
 import {Platform, Modal, ModalController, PopoverController, LoadingController, Nav} from 'ionic-angular';
 import {StatusBar} from 'ionic-native';
 import {Authenticator, IAuthUser} from '../providers/authenticator/authenticator';
@@ -29,6 +29,7 @@ export class StickControlMetronome {
   ];
   rootPage: any = GuidePage;
   @ViewChild(Nav) nav: Nav;
+  @ViewChild(GuidePage) guide: GuidePage;
   @ViewChild(SettingsPage) settings: SettingsPage;
 
   loginPushed = false;
@@ -41,7 +42,8 @@ export class StickControlMetronome {
     public modalController: ModalController,
     private loadingCtrl: LoadingController,
     private audioBuffers: AudioBuffers,
-    private metronome: Metronome) {
+    private metronome: Metronome,
+    private changeDetector: ChangeDetectorRef) {
 
     platform.ready().then(() => {
       this.authenticator.onUserLoaded.subscribe((user: IAuthUser) => {
@@ -82,17 +84,6 @@ export class StickControlMetronome {
     });
   }
 
-/*
-  ngAfterViewInit() {
-    console.log('user is ')
-    console.dir(this)
-    console.log('afterveiwinit')
-    if (this.authenticator.user) {
-      // When not called values all show up!!!
-      this.settings.loadCurrentSettings(this.authenticator.user);
-    }
-  }
-*/
   private tryPreviousLogin() {
     let loading = this.loadingCtrl.create();
     loading.present();
@@ -125,6 +116,7 @@ export class StickControlMetronome {
   loadServices(user: IAuthUser): Observable<void> {
     return Observable.forkJoin([
       this.exerciseSets.load(user),
+      this.exerciseSets.loadShareLists(),
       this.audioBuffers.loadAll(new AudioContext())
         .map(() => {
           this.metronome.load(this.audioBuffers);

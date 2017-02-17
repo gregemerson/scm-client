@@ -3,7 +3,7 @@ import {Http} from '@angular/http';
 import {Authenticator, IAuthUser} from '../../providers/authenticator/authenticator';
 import {HttpService} from '../../providers/http-service/http-service';
 import {Observable} from 'rxjs/Observable';
-import {Observer} from "rxjs";
+import {Observer, Subject} from "rxjs";
 import {ErrorObservable} from 'rxjs/observable/ErrorObservable';
 import {Config} from '../../utilities/config';
 import {Constraints} from '../../utilities/constraints';
@@ -17,6 +17,8 @@ export enum ShareListType {
 
 @Injectable()
 export class ExerciseSets {
+  ready = false;
+  private onReady = new Subject<void>();
   currentExerciseSet: IExerciseSet;
   remainingExerciseSetCount: number;
   private user: IAuthUser;
@@ -33,87 +35,80 @@ export class ExerciseSets {
     this.items = null;
   }
 
+  notifyOnReady(onReady: () => void) {
+    if (this.ready) {
+      onReady();
+    }
+    else {
+      this.onReady.subscribe({
+        next: onReady
+      });
+    }
+  }
+
+  private setReady() {
+    this.ready = true;
+    this.onReady.next();
+    this.onReady = null;
+  }
+
   load(user: IAuthUser): Observable<void> {
     this.user = user;
     this.currentExerciseSet = null;
     let currentId = user.settings.currentExerciseSet;
     let numberPrivateExerciseSets = 0;
     for (let key in user.rawExerciseSets) {
-      let isOwner = user.rawExerciseSets[key]['ownerId'] == user.id;
       numberPrivateExerciseSets += user.rawExerciseSets[key]['public'] ? 0 : 1;
       let newSet = new ExerciseSet(this.httpService, user,
-        user.rawExerciseSets[key], isOwner);
+        user.rawExerciseSets[key]);
       this.items.push(newSet);
       if (newSet.id == user.settings.currentExerciseSet) {
         this.currentExerciseSet = newSet;
       }
     }
-    return this.getShareLists(false)
-      .map(() => {
-        this.pollForReceivedExerciseSets();
-        this.remainingExerciseSetCount = user.
-          subscription['maxExerciseSets'] - numberPrivateExerciseSets;
-        if (this.currentExerciseSet == null) {
-          return Observable.create(observer => observer.next());
-        }
-        else {
-          return (<ExerciseSet>this.currentExerciseSet).
-            loadExercises(this.httpService, user);
-        }
-      });
+    this.pollExerciseSetSharing();
+    this.remainingExerciseSetCount = user.
+      subscription['maxExerciseSets'] - numberPrivateExerciseSets;
+    if (this.currentExerciseSet == null) {
+      this.setReady();
+      return Observable.create(observer => observer.next());
+    }
+    else {
+      return (<ExerciseSet>this.currentExerciseSet).
+        loadExercises(this.httpService, user)
+        .map(() => {
+          this.setReady();
+        });
+    }
   }
 
-  private getShareLists(receivedOnly: boolean): Observable<void> {
-    return this.httpService.getPersistedObject(HttpService.shareLists(this.user.id, receivedOnly))
+  loadShareLists(): Observable<void> {
+    return this.httpService.getPersistedObject(HttpService.shareLists(this.user.id, false))
     .map((result) => {
       // Load shared and received ExerciseSets
       let sharedList = result['lists']['shared'];
       let receivedList = result['lists']['received'];
-      if (!receivedOnly) {
-        this.shared = [];
-        for (let key in sharedList) {
-          this.shared.push(<ISharedExerciseSet>sharedList[key]);
-        }
+      this.shared.length = 0;
+      for (let key in sharedList) {
+        this.shared.push(<ISharedExerciseSet>sharedList[key]);
       }
-      this.received = [];
+      this.received.length = 0;
       for (let key in receivedList) {
         this.received.push(<ISharedExerciseSet>receivedList[key]);
       }
     });
   }
 
-  private pollForReceivedExerciseSets() {
-  Observable.interval(Constraints.ShareCheckInterval).
-    subscribe((value) => this.getShareLists(true));
-  }
-
-  private getSharingList(which: ShareListType) {
-    return which == ShareListType.Received ? this.received : this.shared;
-  }
-
-  private setSharingList(newList: ISharedExerciseSet[], which: ShareListType) {
-    return which == ShareListType.Received ? this.received : this.shared;
-  }  
-
-  private removeFromSharingList(share: ISharedExerciseSet, which: ShareListType) {
-      let list = this.getSharingList(which);
-      for (let idx = 0; idx < list.length; idx++) {
-        if (list[idx].username == share.username && list[idx].name == share.name) {
-          this.setSharingList(list.splice(idx, 1), which);
-        }
-      }
-  }
-
-  private addToSharingList(share: ISharedExerciseSet, which: ShareListType) {
-    let list = this.getSharingList(which);
-    list.push(share);
+  private pollExerciseSetSharing() {
+    Observable.interval(Constraints.ShareCheckInterval).
+      subscribe((value) => this.loadShareLists());
   }
 
   newExerciseSet(initializer: Object): Observable<number> {
     return this.httpService.postPersistedObject(
       HttpService.clientExerciseSets(this.user.id), initializer)
       .map(result => {
-        let newSet = new ExerciseSet(this.httpService, this.user, result, true);
+        let newSet = new ExerciseSet(this.httpService, this.user, result);
         this.items.push(newSet);
         this.remainingExerciseSetCount--;
         return newSet.id;
@@ -136,23 +131,34 @@ export class ExerciseSets {
   removeCurrentExerciseSet() {
     return this.httpService.deletePersistedObject(
         HttpService.removeExerciseSet(this.user.id, this.currentExerciseSet.id))
-        .map(result => {
+        .flatMap((result, index) => {
           this.remainingExerciseSetCount++;
           let indexToDelete: number;
+          let newExerciseSetId = null;
           for (let index = 0; index < this.items.length; index++) {
             if (this.currentExerciseSet.id == this.items[index].id) {
               this.items = this.items.splice(index, 1);
               this.currentExerciseSet = null;
               if (this.items.length > 0) {
-                this.setCurrentExerciseSet(this.items[0].id);
+                newExerciseSetId = this.items[0].id;
               }
-              break;
             }
           }
+          return this.setCurrentExerciseSet(newExerciseSetId);
         });
+  }
+
+  public receiveExerciseSet(exerciseSetId: number) {
+    return this.httpService.getPersistedObject(HttpService.receiveExerciseSet(this.user.id, exerciseSetId))
+    .map((receivedExerciseSet) => {
+      this.items.push(new ExerciseSet(this.httpService, this.user, receivedExerciseSet));
+    })
   }
   
   public setCurrentExerciseSet(exerciseSetId: number): Observable<void> {
+    if (this.currentExerciseSet && this.currentExerciseSet.id == exerciseSetId) {
+      return Observable.of(null);
+    }
     this.user.settings.currentExerciseSet = exerciseSetId;
     if (this.currentExerciseSet != null) {
       (<ExerciseSet>this.currentExerciseSet).unloadExercises();
@@ -225,7 +231,7 @@ class ExerciseSet implements IExerciseSet {
 
   constructor(private httpService: HttpService, 
     private user: IAuthUser, 
-    rawExerciseSet: Object, isOwner: boolean) {
+    rawExerciseSet: Object) {
     this.name = rawExerciseSet['name'];
     this.id = rawExerciseSet['id'];
     this.category = rawExerciseSet['category'];
@@ -234,7 +240,7 @@ class ExerciseSet implements IExerciseSet {
     for (let exerciseId of rawExerciseSet['disabledExercises']) {
       this.disabledExercises[<number>exerciseId] = true;
     }
-    this._isOwner = isOwner;
+    this._isOwner = user.id == rawExerciseSet['ownerId'];
   }
 
   get isOwner(): boolean {
@@ -254,8 +260,6 @@ class ExerciseSet implements IExerciseSet {
       HttpService.createdExercises(this.id), initializer)
       .map(result => {
         let exercise = result['exercise'];
-        console.log('exercise: ' + exercise["id"]);
-        console.dir(exercise);
         this.exercises[exercise['id']] = new Exercise(exercise);
         this.exerciseOrdering.push(exercise['id']);
         return exercise['id'];
@@ -298,6 +302,8 @@ class ExerciseSet implements IExerciseSet {
     return httpService.getPersistedObject(HttpService.ExerciseSetCollection + 
       this.id + this.filter, Authenticator.newRequestOptions())
     .map(exerciseSet => {
+      console.log('returned full exercise set');
+      console.dir(exerciseSet)
       let exercises = <Array<Object>>exerciseSet['exercises'];
       for (let exercise of exercises) {
         this.exercises[exercise['id']] = new Exercise(exercise);

@@ -31,26 +31,22 @@
       <ion-list *ngSwitchCase="'received'">
         <ion-list-header>Exercise sets shared with you</ion-list-header>
         <ion-item *ngFor="let set of receivedExerciseSets; let idx = index">
+          <button ion-button (click)="accept(idx)" color="primary" small item-left>
+              <ion-icon name="checkmark"></ion-icon></button>
+          <button ion-button (click)="reject(idx)" color="danger" small item-left>
+              <ion-icon name="trash"></ion-icon>
+          </button>
           {{ set.name }}
-          <ion-buttons end>
-              <button ion-button (click)="accept(idx)" color="primary" small>
-                  <ion-icon name="checkmark"></ion-icon></button>
-              <button ion-button (click)="reject(idx)" color="danger" small>
-                  <ion-icon name="trash"></ion-icon>
-              </button>
-          </ion-buttons>
         </ion-item>
       </ion-list>
 
       <ion-list *ngSwitchCase="'shared'">
         <ion-list-header>Exercise sets you have shared</ion-list-header>
         <ion-item *ngFor="let set of sharedExerciseSets; let idx = index">
+          <button ion-button (click)="withdraw(idx)" color="danger" small item-left>
+              <ion-icon name="trash"></ion-icon>
+          </button>
           {{ set.name }}
-          <ion-buttons end>
-              <button ion-button (click)="withdraw(idx)" color="danger" small>
-                  <ion-icon name="trash"></ion-icon>
-              </button>
-          </ion-buttons>
         </ion-item>
       </ion-list>
 

@@ -49,6 +49,9 @@ export class HttpService extends Observable<ScmErrorList> {
   static shareLists(clientId: number, receivedOnly: boolean): string {
     return this.addRoot('Clients/' + clientId.toString() + '/exerciseSetSharing/' + receivedOnly);
   }
+  static receiveExerciseSet(clientId: number, exerciseSetId: number): string {
+    return this.addRoot('Clients/' + clientId + '/receivedExerciseSets/' + exerciseSetId);
+  }
 
   private debug(err: any, op: string, url: string) {
     if (isDevMode()) {
@@ -98,10 +101,13 @@ export class HttpService extends Observable<ScmErrorList> {
   }
   
   getPersistedObject(url: string, requestOptions = Authenticator.newRequestOptions()): Observable<Object> {
+    console.log('gettings ' + url)
     return this.http.get(url, requestOptions)
       .timeout(HttpService.timeout, ScmErrors.httpError)
       .map(response => this.processResponse(response))
       .catch((error: Response | any) => {
+        console.log('error was ...')
+        console.dir(error)
         this.debug(error, 'get', url);
         return this.handleError(error);
       });
