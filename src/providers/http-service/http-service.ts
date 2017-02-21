@@ -5,7 +5,7 @@ import {Config} from '../../utilities/config'
 import {Observable} from 'rxjs/Observable';
 import {ErrorObservable} from 'rxjs/observable/ErrorObservable';
 import {Observer, Subscriber, Subscription} from 'rxjs';
-import {ScmErrors, IScmError, ScmErrorList} from '../../utilities/errors'
+import {ScmErrors, IScmError, ScmErrorList} from '../../utilities/errors';
 import 'rxjs/add/operator/map';
 
 @Injectable()
@@ -101,13 +101,10 @@ export class HttpService extends Observable<ScmErrorList> {
   }
   
   getPersistedObject(url: string, requestOptions = Authenticator.newRequestOptions()): Observable<Object> {
-    console.log('gettings ' + url)
     return this.http.get(url, requestOptions)
       .timeout(HttpService.timeout, ScmErrors.httpError)
       .map(response => this.processResponse(response))
       .catch((error: Response | any) => {
-        console.log('error was ...')
-        console.dir(error)
         this.debug(error, 'get', url);
         return this.handleError(error);
       });

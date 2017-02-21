@@ -6,7 +6,7 @@ import {Observable} from 'rxjs/Observable';
 import {Observer, Subject} from "rxjs";
 import {ErrorObservable} from 'rxjs/observable/ErrorObservable';
 import {Config} from '../../utilities/config';
-import {Constraints} from '../../utilities/constraints';
+import {Constraints, ExerciseConstraints} from '../../utilities/constraints';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/observable/throw';
 
@@ -66,12 +66,11 @@ export class ExerciseSets {
         this.currentExerciseSet = newSet;
       }
     }
-    this.pollExerciseSetSharing();
     this.remainingExerciseSetCount = user.
       subscription['maxExerciseSets'] - numberPrivateExerciseSets;
     if (this.currentExerciseSet == null) {
       this.setReady();
-      return Observable.create(observer => observer.next());
+      return Observable.of(null);
     }
     else {
       return (<ExerciseSet>this.currentExerciseSet).
@@ -99,7 +98,7 @@ export class ExerciseSets {
     });
   }
 
-  private pollExerciseSetSharing() {
+  pollExerciseSetSharing() {
     Observable.interval(Constraints.ShareCheckInterval).
       subscribe((value) => this.loadShareLists());
   }
@@ -205,6 +204,7 @@ export interface IExerciseSet {
   name: string;
   category: string;
   comments: string;
+  readonly canAdd: boolean;
   next(): IExercise;
   initIterator(): void;
   newExercise(exerciseInitializer: Object): Observable<number>;
@@ -220,6 +220,7 @@ class ExerciseSet implements IExerciseSet {
   name: string;
   category: string;
   id: number;
+  private constraints = new ExerciseConstraints();
   private nextIndex: number = -1;
   private exercises: {[key: number]: Exercise} = {};
   private disabledExercises:  {[key: number]: boolean} = {};
@@ -241,6 +242,11 @@ class ExerciseSet implements IExerciseSet {
       this.disabledExercises[<number>exerciseId] = true;
     }
     this._isOwner = user.id == rawExerciseSet['ownerId'];
+  }
+
+  get canAdd() {
+    return Object.keys(this.exercises).length < 
+      this.constraints.maxExercisesPerSet;
   }
 
   get isOwner(): boolean {
@@ -302,8 +308,6 @@ class ExerciseSet implements IExerciseSet {
     return httpService.getPersistedObject(HttpService.ExerciseSetCollection + 
       this.id + this.filter, Authenticator.newRequestOptions())
     .map(exerciseSet => {
-      console.log('returned full exercise set');
-      console.dir(exerciseSet)
       let exercises = <Array<Object>>exerciseSet['exercises'];
       for (let exercise of exercises) {
         this.exercises[exercise['id']] = new Exercise(exercise);

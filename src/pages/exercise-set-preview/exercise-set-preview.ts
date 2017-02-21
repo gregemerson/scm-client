@@ -75,7 +75,8 @@ export class ExerciseSetPreviewPage {
     this.exerciseSetDetails = comments + category;
   }
 
-  selectExerciseSet() {
+  selectExerciseSet(mainFab: any) {
+    mainFab.close();
     this.modalCtrl.create(ExerciseSetSelectorPage,
       {
         onSelect: (id: number) => {
@@ -108,7 +109,8 @@ export class ExerciseSetPreviewPage {
     this.dismissLoading();
   }
   
-  updateExerciseSetMetadata() {
+  updateExerciseSetMetadata(mainFab: any) {
+    mainFab.close();
     this.modalCtrl.create(NewExerciseSetForm, {
       create: (formData: Object) => {
           if (!formData) {
@@ -132,7 +134,8 @@ export class ExerciseSetPreviewPage {
     }).present();
   }
 
-  shareExerciseSet() {
+  shareExerciseSet(mainFab: any) {
+    mainFab.close();
     this.modalCtrl.create(ShareExerciseSetForm, {
       callback: (initializer: Object) => {
           if (!initializer) {
@@ -150,7 +153,8 @@ export class ExerciseSetPreviewPage {
     }).present();
   }
 
-  newExerciseSet() {
+  newExerciseSet(mainFab: any) {
+    mainFab.close();
     this.modalCtrl.create(NewExerciseSetForm, {
       create: (formData: Object) => {
           if (!formData) {
@@ -169,7 +173,8 @@ export class ExerciseSetPreviewPage {
     }).present();
   }
 
-  newExercise() {
+  newExercise(mainFab: any) {
+    mainFab.close();
     this.modal.create(NewExerciseForm, {
       create: (formData: Object) => {
           let exerciseSet = this.exerciseSets.currentExerciseSet;
@@ -193,7 +198,7 @@ export class ExerciseSetPreviewPage {
               this.onSuccessfulOperations();
             },
             error: (err: any) => {
-              this.onFailedOperation('Could not create exercise set');
+              this.onFailedOperation('Could not create exercise');
             }
           });
       }
@@ -369,7 +374,8 @@ export class ExerciseSetPreviewPage {
     }).present();
   }
 
-  removeExerciseSet() {
+  removeExerciseSet(mainFab: any) {
+    mainFab.close();
     this.exerciseSets.removeCurrentExerciseSet().subscribe({
       next: () => {
         this.onSuccessfulOperations();

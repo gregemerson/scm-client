@@ -47,7 +47,7 @@ export class StickControlMetronome {
 
     platform.ready().then(() => {
       this.authenticator.onUserLoaded.subscribe((user: IAuthUser) => {
-        let loading = this.loadingCtrl.create();
+        let loading = this.loadingCtrl.create({content: 'loading user data...'});
         loading.present();
 
         this.loadServices(user).subscribe({
@@ -118,13 +118,12 @@ export class StickControlMetronome {
       this.exerciseSets.load(user),
       this.exerciseSets.loadShareLists(),
       this.audioBuffers.loadAll(new AudioContext())
-        .map(() => {
-          this.metronome.load(this.audioBuffers);
-          return Observable.of();
-        })
     ])
     .flatMap(() => {
+      console.log('fork join completed...');
+      this.metronome.load(this.audioBuffers);
       this.servicesLoaded = true;
+      this.exerciseSets.pollExerciseSetSharing();
       return Observable.of(null);
     })
     .retry(1)
