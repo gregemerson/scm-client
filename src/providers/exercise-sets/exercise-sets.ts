@@ -579,7 +579,6 @@ export class ExerciseElements {
   }
 
   longestStrokeGroup(): number {
-    let longestGroup = 0;
     let currentGroupCount = 0;
     let inGroup = false;
     let groupCounts: number[] = [];
@@ -597,7 +596,7 @@ export class ExerciseElements {
         inGroup = false;
       }
     }
-    return longestGroup;
+    return Math.max.apply(null, groupCounts);
   }
 }
 

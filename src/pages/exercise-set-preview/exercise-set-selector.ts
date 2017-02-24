@@ -18,7 +18,6 @@ export class ExerciseSetSelectorPage {
     this.selectionId = navParams.get('currentSelectionId');
     this.exerciseSets = navParams.get('exerciseSets');
     this.createCategories();
-    console.dir(this.categories);
   }
 
   onOk() {

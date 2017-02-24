@@ -1,21 +1,17 @@
-<ion-header>
-  <ion-navbar>
-    <ion-title>Define Repeat</ion-title>
-  </ion-navbar>
-</ion-header>
-<ion-content padding>
+
+<form [formGroup]="repeatsGroup">
     <ion-list>
         <ion-item>
-            <ion-label>Number of Measures</ion-label>
-            <ion-range pin="true" [min]="minMeasures" [max]="maxMeasures" [step]="1" [(ngModel)]="numMeasures" color="primary">
+            <ion-label>Number of Measures: repeatsGroup.value.numMeasures</ion-label>
+            <ion-range pin="true" [min]="constraints.minRepeatMeasures" [max]="maxMeasures" [step]="1" formControlName="numMeasures" color="primary">
                 <ion-label range-left>Min: {{ minMeasures }}</ion-label>
                 <ion-label range-right>Max: {{ maxMeasures }}</ion-label>
             </ion-range>
             <ion-badge>{{ numMeasures }}</ion-badge>
         </ion-item>
         <ion-item>
-            <ion-label>Number of Repeats</ion-label>
-            <ion-range pin="true" [min]="minRepeats" [max]="maxRepeats" [step]="1" [(ngModel)]="numRepeats" color="primary">
+            <ion-label>Number of Repeats: {{ repeatsGroup.value.numRepeats }}</ion-label>
+            <ion-range pin="true" [min]="constraints.minRepeats" [max]="constraints.maxRepeats" [step]="1" formControlName="numRepeats" color="primary">
                 <ion-label range-left>Min: {{ minRepeats }}</ion-label>
                 <ion-label range-right>Max: {{ maxRepeats }}</ion-label>
             </ion-range>
@@ -23,7 +19,7 @@
         </ion-item>
         <ion-item>
             <ion-buttons start>
-                <button ion-button [disabled]="!newExerciseSet.valid" (click)="create()" color="primary" small>
+                <button ion-button [disabled]="!repeatsGroup.valid" (click)="create()" color="primary" small>
                     <ion-icon name="checkmark"></ion-icon>
                 </button>
                 <button ion-button (click)="cancel()" color="danger" small>
@@ -32,4 +28,4 @@
             </ion-buttons>
         </ion-item>
     </ion-list>
-</ion-content>
+</form>

@@ -17,6 +17,9 @@ export class ExerciseConstraints {
   readonly maxSharedExerciseComments = 100;
   readonly maxExercisesPerSet = 24;
   readonly maxEncodingLength = 600;
+  readonly minRepeats = 1;
+  readonly maxRepeats = 100;
+  readonly minRepeatMeasures = 1;
 }
 
 export class SettingsConstraints {

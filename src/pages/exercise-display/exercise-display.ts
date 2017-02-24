@@ -6,12 +6,12 @@ import * as ES from '../../providers/exercise-sets/exercise-sets';
   selector: 'exercise-display',
   styles: [
     `.exercise-canvas {
-        z-index: 2;
+        z-index: 99;
         border-style: none;
         border-color: green;       
      }`,
     `.cursor-canvas {
-        z-index: 3;
+        z-index: 100;
         position: absolute;
         border-style: none;
         border-color: red;
@@ -34,6 +34,7 @@ export class ExerciseDisplay {
   private underscoreY: number;
   private groupingY: number;
   private bottomPaddingY: number;
+  private lineHeight: number;
   private noteBottomSpacing: number;
   private noteTopSpacing: number;
 
@@ -116,7 +117,10 @@ export class ExerciseDisplay {
       this.container.nativeElement).paddingLeft; 
   }
 
+  private inEditMode = false;
+
   drawCursor(position: number) {
+    this.inEditMode = true;
     this.setupRegions();
     let widthIndexOffset = 0;
     for (let endOfLine of this.endOfLineIndices) {
@@ -142,7 +146,14 @@ export class ExerciseDisplay {
   }
 
   hideCursor() {
+    this.inEditMode = false;
     this.clearCanvas(this.cursorCanvas);
+  }
+
+  private tempDebug(s: string) {
+    if (this.inEditMode) {
+      console.log(s);
+    }
   }
 
   private clearCanvas(canvas: HTMLCanvasElement) {
@@ -180,43 +191,50 @@ export class ExerciseDisplay {
     let width = this.getNoteWidth('R');
     let height = this.selectedFontSize;
     let ctx = this.getExerciseContext();
+    ctx.textBaseline = 'top';
     ctx.fillStyle = 'rgba(200, 0, 0, .8)';
     ctx.fillRect(0, 0, width, height);
-    this.drawNoteFont('R', 0, height, 'rgba(0, 0, 0, 1)');
+    this.drawNoteFont('R', 0, 0, 'rgba(0, 0, 0, 1)');
     let imageData = ctx.getImageData(0, 0, width, height).data;
-    let upper = 0;
-    let lower = 0;
-    let middle = 0;
+    let row = 0;
+    let column = 0;
     let rowLength = 4 * width;
+    let done = false;
+    this.noteTopSpacing = 0;
+    this.noteBottomSpacing = 0;
     for (let row = 0; row < height; row++) {
-      // Scan row
-      let hasNote = false;
       for (let column = 0; column < width; column++) {
         if (imageData[(4 * column) + (row * rowLength)] == 0) {
-          hasNote = true;
+          this.noteTopSpacing = row;
+          row = height;
           break;
         }
       }
-      if (hasNote) {
-        middle++;
-      }
-      else {
-        upper += middle == 0 ? 1 : 0;
-        lower += middle != 0 ? 1 : 0;
+    }
+    for (let row = Math.floor(height - 1); row > 0; row--) {
+      for (let column = 0; column < width; column++) {
+        if (imageData[(4 * column) + (row * rowLength)] == 0) {
+          this.noteBottomSpacing = row;
+          row = 0;
+          break;
+        }
       }
     }
-    this.noteTopSpacing = upper - 1;
-    this.noteBottomSpacing = lower + 3;
+
     this.clearCanvas(this.exerciseCanvas);
   }
 
   draw(exercise: ES.IExercise, container: ElementRef, maxHeight: number, 
     desiredFontSize: number): number {
+    this.tempDebug('entering draw')
     this.container = container;
-    this.clearCanvas(this.exerciseCanvas);
-    this.clearCanvas(this.cursorCanvas);
     this.positionInContainer();
     this.createLayout(exercise, maxHeight, desiredFontSize);
+    if (this.selectedFontSize == 0) {
+      return -1;
+    }
+    this.clearCanvas(this.exerciseCanvas);
+    this.clearCanvas(this.cursorCanvas);
     this.exerciseCanvas.height = this.endOfLineIndices.length * this.bottomPaddingY; 
     this.cursorCanvas.height = this.exerciseCanvas.height;
     let context = this.getExerciseContext();
@@ -224,6 +242,11 @@ export class ExerciseDisplay {
     let display = exercise.display;
     this.noteWidths = [];
     this.setFontVerticalSpacing();
+    context.beginPath();
+    context.moveTo(0, 0);
+    context.lineWidth = 8;
+    context.strokeRect(0, 0, this.exerciseCanvas.width, this.exerciseCanvas.height)
+    context.closePath();
     for (let lineIdx = 0; lineIdx < this.endOfLineIndices.length; lineIdx++) {
       this.noteWidths.push(this.noteSpacing);
       this.resetNoteX();
@@ -252,54 +275,72 @@ export class ExerciseDisplay {
       }
       this.moveNextLine();
     }
+    this.tempDebug('exiting draw')
     return this.exerciseCanvas.height;
   }
 
+  private readonly repeatCharCount = 2;
+
   private createLayout(exercise: ES.IExercise, maxHeight: number, fontSize: number) {
+    this.tempDebug('entering layout')
     let context = this.getExerciseContext();
-    this.selectedFontSize = fontSize;
+    this.selectedFontSize = Math.floor(fontSize);
     let noteWidth: number;
-    let longestGroupLength = exercise.display.longestStrokeGroup();
+    let longestGroupLength = Math.max(this.repeatCharCount, exercise.display.longestStrokeGroup());
     // Guarantee that the longest stroke group will fit within a line
-    while (true) {
+    while (this.selectedFontSize > 0) {
       this.setNoteFont();
       noteWidth = this.getTotalNoteWidth();
       let currentWidthNeeded = (longestGroupLength * noteWidth) + this.noteSpacing;
-      if (currentWidthNeeded <= this.exerciseCanvas.width) {
+      if (currentWidthNeeded < this.exerciseCanvas.width) {
         break;
       }
       else {
-        if (this.selectedFontSize == 0) {
-          break;
-        }
         this.selectedFontSize--;
       }
     }
-    // Now find line breaks which can only be ' ' or '|'
-    this.endOfLineIndices.length = 0;
-    let usedWidth = 0;
-    let breakCandidate = 0;
-    let previousBreak = -1;
-    let lastNewLine = -1;
-    for (let elementIndex = 0; elementIndex < exercise.display.length; elementIndex++) {
-      let element = exercise.display.getElement(elementIndex);
-      // @todo note type widths should be encapsulated
-      let currentWidth = (element instanceof ES.Repeat) ? 2 * noteWidth : noteWidth;
-      if ((usedWidth + currentWidth) <= this.exerciseCanvas.width) {
-        // See if element can be an eol
+    if (this.selectedFontSize <= 0) {
+      this.tempDebug(this.selectedFontSize + '  ' + longestGroupLength + '  ' + this.exerciseCanvas.width + '  ' + noteWidth + '  ' + this.noteSpacing)
+      this.tempDebug('exiting layout 1')
+      return;
+    }
+    this.setNoteFont();
+    while (this.selectedFontSize > 0) {
+      // Now find line breaks which can only be ' ' or '|'
+      this.endOfLineIndices.length = 0;
+      let usedWidth = 0;
+      let previousBreak = -1;
+      let lastNewLine = -1;
+      for (let elementIndex = 0; elementIndex < exercise.display.length; elementIndex++) {
+        let element = exercise.display.getElement(elementIndex);
+        // @todo note type widths should be encapsulated
+        let currentWidth = (element instanceof ES.Repeat) ? 2 * noteWidth : noteWidth;
         if (!(element instanceof ES.Stroke)) {
           lastNewLine = elementIndex;
         }
-        usedWidth += currentWidth;
+        if ((usedWidth + currentWidth) <= this.exerciseCanvas.width) {
+          // See if element can be an line break
+          usedWidth += currentWidth;
+        }
+        else {
+          this.endOfLineIndices.push(lastNewLine - 1);
+          elementIndex = lastNewLine;
+          usedWidth = 0;
+        }
+      }
+      // testing!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      if ((this.endOfLineIndices.length *  this.selectedFontSize) <= 400) {
+        break;
       }
       else {
-        this.endOfLineIndices.push(lastNewLine - 1);
-        elementIndex = lastNewLine;
-        usedWidth = currentWidth;
+        this.selectedFontSize--;
+        this.setNoteFont();
       }
     }
     this.endOfLineIndices.push(exercise.display.length - 1);
     this.setupRegions();
+    this.tempDebug('exiting layout 2' )
+    console.dir(this.endOfLineIndices)
   }
 
   private setupRegions(): void {
@@ -313,6 +354,7 @@ export class ExerciseDisplay {
     this.graceNoteY = this.letterY + (0.3 * fontSize);
     this.groupingY = this.graceNoteY + (0.5 * fontSize);
     this.bottomPaddingY = this.groupingY + (0.1 * fontSize);
+    this.lineHeight = this.bottomPaddingY;
     this.resetNoteX();
   }
 
@@ -321,15 +363,14 @@ export class ExerciseDisplay {
   }
 
   private moveNextLine() {
-    let distanceY = this.bottomPaddingY;
-    this.topPaddingY += distanceY;
-    this.accentY += distanceY;
-    this.accentPaddingY += distanceY;
-    this.letterY += distanceY;
-    this.graceNoteY += distanceY;
-    this.underscoreY += distanceY;
-    this.groupingY += distanceY;
-    this.bottomPaddingY += distanceY;
+    this.topPaddingY += this.lineHeight;
+    this.accentY += this.lineHeight;
+    this.accentPaddingY += this.lineHeight;
+    this.letterY += this.lineHeight;
+    this.graceNoteY += this.lineHeight;
+    this.underscoreY += this.lineHeight;
+    this.groupingY += this.lineHeight;
+    this.bottomPaddingY += this.lineHeight;
     this.resetNoteX();
   }
 
@@ -355,6 +396,7 @@ export class ExerciseDisplay {
         this.drawRest(stroke.hand, x);
       }
       else {
+        this.tempDebug('stroke at (' + x + ', ' + this.letterY + ')')
         this.drawNoteFont(stroke.hand, x, this.letterY);
       }
       let endPosition = this.setNoteEndPosition(stroke.hand);
@@ -395,14 +437,17 @@ export class ExerciseDisplay {
     let endX = startX + noteWidth;
     let halfHeight = (this.graceNoteY - this.topPaddingY)/2;
     let verticalCenter = this.graceNoteY - halfHeight;
+    let horizontalCenter = startX + (endX - startX)/2;
     let context = this.getExerciseContext();
     // Draw divider
     let offset = noteWidth * .1;
     context.lineWidth = 0.06 * this.selectedFontSize;
     context.beginPath();
     context.strokeStyle = 'gray';
-    context.moveTo(startX + offset, this.graceNoteY - offset);
-    context.lineTo(endX - offset, this.topPaddingY + offset);
+    context.moveTo(startX + offset, verticalCenter);
+    context.lineTo(endX - offset, verticalCenter);
+    //context.moveTo(startX + offset, this.graceNoteY - offset);
+    //context.lineTo(endX - offset, this.topPaddingY + offset);
     context.stroke();   
     context.closePath();
     // Draw values
@@ -411,11 +456,19 @@ export class ExerciseDisplay {
     context.font = textHeight + this.exerciseFont;
     let top = repeat.numMeasures.toString();
     let bottom = repeat.numRepeats.toString()
-    let bottomWidth = context.measureText(repeat.numRepeats.toString()).width;
+    let topWidth = context.measureText(repeat.numMeasures.toString()).width/2;
+    let bottomWidth = context.measureText(repeat.numRepeats.toString()).width/2;
+
+    context.textBaseline = 'bottom';
+    context.strokeText(top, startX + topWidth, verticalCenter - offset);
+    context.textBaseline = 'top';
+    context.strokeText(bottom, startX + topWidth, verticalCenter + offset);
+    /*
     context.textBaseline = 'top';
     context.strokeText(top, startX, this.topPaddingY);
     context.textBaseline = 'bottom';
     context.strokeText(bottom, endX - bottomWidth, this.graceNoteY);
+    */
     return endPosition;
   }
 

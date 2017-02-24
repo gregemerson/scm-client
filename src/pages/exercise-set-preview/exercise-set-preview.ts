@@ -262,10 +262,10 @@ export class ExerciseSetPreviewPage {
   }
 
   private drawExercise(exercise: ES.IExercise, 
-    display: ExerciseDisplay, container: ElementRef) {
+    display: ExerciseDisplay, container: ElementRef): number {
       let fontSize = this.fontFactor * Number.parseInt(
         getComputedStyle(container.nativeElement).fontSize);
-      let height = display.draw(exercise, container, 
+      return display.draw(exercise, container, 
         Number.MAX_SAFE_INTEGER, fontSize);
     }
 
@@ -413,7 +413,7 @@ export class ExerciseEditor {
   enableGrace = false;
   
   constructor(private elements: ES.ExerciseElements,
-    private drawExercise: () => void,
+    private drawExercise: () => number,
     private drawCursor: (position: number) => void,
     private onSave: (snapShot: Object) => void,
     private onCancel: () => void,
@@ -441,9 +441,9 @@ export class ExerciseEditor {
     this.enableGrace = this.enableAccent;
   }
 
-  private drawAll() {
-    this.drawExercise();
+  private drawAll(): number {
     this.drawCursor(this.elements.cursorPosition);
+    return this.drawExercise();
   }
 
   backspace() {
@@ -507,7 +507,9 @@ export class ExerciseEditor {
     stroke.grace = ES.Encoding.noGrace;
     stroke.hand = hand;
     this.elements.insertAtCursor(stroke);
-    this.drawAll();
+    if (this.drawAll() == -1) {
+      this.back();
+    }
   }
 
   saveExerciseEditing() {
