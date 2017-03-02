@@ -122,7 +122,7 @@ export class ExerciseSetPreviewPage {
               this.onSuccessfulOperations('Saved successfully');
             },
             error: (err: any) => {
-              this.onFailedOperation('Could not edit exercise set.');
+              this.onFailedOperation(err);
             }
           });
       },
@@ -141,14 +141,14 @@ export class ExerciseSetPreviewPage {
           if (!initializer) {
             return;
           }
-          this.exerciseSet.shareExerciseSet(initializer).subscribe({
-            next: (result: Object) => {
+          this.exerciseSet.shareExerciseSet(initializer).subscribe(
+            (result: Object) => {
               this.onSuccessfulOperations('Shared with ' + initializer['username']);
             },
-            error: (err: any) => {
-              this.onFailedOperation('Could not share exercise set');
+            (err: any) => {
+              this.onFailedOperation(err);
             }
-          });
+          );
       }
     }).present();
   }
@@ -160,15 +160,15 @@ export class ExerciseSetPreviewPage {
           if (!formData) {
             return;
           }
-          this.exerciseSets.newExerciseSet(formData).subscribe({
-            next: (setId: number) => {
+          this.exerciseSets.newExerciseSet(formData).subscribe(
+            (setId: number) => {
               this.changeCurrentExerciseSet(setId);
               this.onSuccessfulOperations();
             },
-            error: (err: any) => {
-              this.onFailedOperation('Could not create exercise set');
+            (err: any) => {
+              this.onFailedOperation(err);
             }
-          });
+          );
       }
     }).present();
   }
@@ -181,8 +181,8 @@ export class ExerciseSetPreviewPage {
           if (!formData) {
             return;
           }
-          exerciseSet.newExercise(formData).subscribe({
-            next: (exerciseId: number) => {
+          exerciseSet.newExercise(formData).subscribe(
+            (exerciseId: number) => {
               let index = 0;
               let exercise = null;
               exerciseSet.initIterator();
@@ -197,10 +197,10 @@ export class ExerciseSetPreviewPage {
               this.content.scrollToBottom();
               this.onSuccessfulOperations();
             },
-            error: (err: any) => {
-              this.onFailedOperation('Could not create exercise');
+            (err: any) => {
+              this.onFailedOperation(err);
             }
-          });
+          );
       }
     }).present();    
   }
@@ -219,8 +219,8 @@ export class ExerciseSetPreviewPage {
         this.onSuccessfulOperations();
         this.onChangedExerciseSet();
       },
-      (error: any) => {
-        this.onFailedOperation('Could not change exercise set');
+      (err: any) => {
+        this.onFailedOperation(err);
       }
     )
   }
@@ -322,22 +322,20 @@ export class ExerciseSetPreviewPage {
           }
         }
         this.exerciseSets.currentExerciseSet.
-          save(exercise, fieldsToSave).subscribe({
-            next: () => {
+          save(exercise, fieldsToSave).subscribe(
+            () => {
                 this.setEditMode(false);
-                this.toaster.present('Exercise saved successfully');
+                this.onSuccessfulOperations('Exercise saved successfully');
                 display.hideCursor();
                 loading.dismiss();
             },
-            error: (err: any) => {
+            (err: any) => {
               this.revertExerciseValues(exercise, draw);
               display.hideCursor();
               loading.dismiss();
-              let message = MessagesPage.createMessage(
-                  'Error', err, MessageType.Error);
-              this.showMessages([message]);
+              this.errorDisplay.show(err);
             }
-          });
+          );
       }, () => {
         // Cancel
         this.revertExerciseValues(exercise, draw);
@@ -356,18 +354,16 @@ export class ExerciseSetPreviewPage {
   }
 
   deleteExercise(idx: number) {
-    this.popover.create(WarningPage, {
+    this.modal.create(WarningPage, {
       message: 'Do you want to permanantly delete this exercise?',
       okCallback: () => {
         this.exerciseSets.currentExerciseSet.delete(
           this.exercises[idx]).subscribe({
             next: (obj: Object) => {
-              console.log('delete next for index' + idx);
               this.exercises.splice(idx, 1);
             },
-            error: (err: any) => {
-              let message = MessagesPage.createMessage(
-                "Error", "could not delete exercise", MessageType.Error);
+            error: (message: any) => {
+              this.onFailedOperation(message);
             }
           });
       }
@@ -382,7 +378,7 @@ export class ExerciseSetPreviewPage {
         this.onChangedExerciseSet();
       },
       error: (err: any) => {
-        this.onFailedOperation('Could not remove exercise set');
+        this.onFailedOperation(err);
       }
     });
   }
@@ -405,12 +401,13 @@ export class ExerciseEditor {
   leftHand = ES.Encoding.accentedLeft;
   bothHands = ES.Encoding.accentedBoth;
   noHands = ES.Encoding.rest;
-
+  buttonHelp = false;
   enableStroke = false;
   atStroke = false;
   enableRepeat = false;
   enableAccent = false;
   enableGrace = false;
+  enableSpace = false;
   
   constructor(private elements: ES.ExerciseElements,
     private drawExercise: () => number,
@@ -439,11 +436,13 @@ export class ExerciseEditor {
       this.enableAccent = (<ES.Stroke>element).hand != ES.Encoding.rest;
     }
     this.enableGrace = this.enableAccent;
+    this.enableSpace = element instanceof ES.Stroke;
   }
 
   private drawAll(): number {
+    let height = this.drawExercise();
     this.drawCursor(this.elements.cursorPosition);
-    return this.drawExercise();
+    return height;
   }
 
   backspace() {
@@ -508,7 +507,7 @@ export class ExerciseEditor {
     stroke.hand = hand;
     this.elements.insertAtCursor(stroke);
     if (this.drawAll() == -1) {
-      this.back();
+      //this.back();
     }
   }
 

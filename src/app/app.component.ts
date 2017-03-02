@@ -4,7 +4,6 @@ import {StatusBar} from 'ionic-native';
 import {Authenticator, IAuthUser} from '../providers/authenticator/authenticator';
 import {ExerciseSets} from '../providers/exercise-sets/exercise-sets';
 import {LoginPage} from '../pages/login/login';
-import {MessagesPage, IMessage, MessageType} from '../pages/messages/messages';
 import {Observable} from 'rxjs/Observable';
 import {HttpService} from '../providers/http-service/http-service';
 import {AudioBuffers} from '../providers/audio-buffers/audio-buffers';
@@ -120,7 +119,6 @@ export class StickControlMetronome {
       this.audioBuffers.loadAll(new AudioContext())
     ])
     .flatMap(() => {
-      console.log('fork join completed...');
       this.metronome.load(this.audioBuffers);
       this.servicesLoaded = true;
       this.exerciseSets.pollExerciseSetSharing();

@@ -262,6 +262,7 @@ class ExerciseSet implements IExerciseSet {
   newExercise(initializer: Object): Observable<number> {
     initializer['exerciseSetId'] = this.id;
     initializer['created'] = new Date();
+    initializer['ownerId'] = this.user.id;
     return this.httpService.postPersistedObject(
       HttpService.createdExercises(this.id), initializer)
       .map(result => {
@@ -288,7 +289,7 @@ class ExerciseSet implements IExerciseSet {
   }
 
   delete(exercise: IExercise): Observable<Object> {
-    let url = HttpService.exerciseSetExercise(this.id, exercise.id);
+    let url = HttpService.exercise(exercise.id);
     return this.httpService.deletePersistedObject(url);
   }
 
@@ -777,6 +778,7 @@ export class Stroke extends ExerciseElement {
     hand: string;
     accented: boolean;
     grace: number;
+
 
     tryParse(encoding: string, index: number): Stroke {
       let char = encoding[index];

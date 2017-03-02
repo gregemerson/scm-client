@@ -16,6 +16,7 @@ export class HttpService extends Observable<ScmErrorList> {
   static get newUser(): string {return this.addRoot('Clients/createNewUser')}
   static get ExerciseSetCollection(): string {return this.addRoot('ExerciseSets/');}
   static get ExerciseCollection(): string {return this.addRoot('Exercises/');}
+  
   static exerciseSetExercises(exerciseSetId: number): string {
     return this.addRoot('ExerciseSets/' + exerciseSetId.toString() + '/exercises');
   }
@@ -91,9 +92,11 @@ export class HttpService extends Observable<ScmErrorList> {
   }
 
   putPersistedObject(url: string,  data: any, requestOptions = Authenticator.newRequestOptions()): Observable<Object> {
-    return this.http.put(url, data, requestOptions)
+    return this.http.patch(url, data, requestOptions)
       .timeout(HttpService.timeout, ScmErrors.httpError)
-      .map(response => this.processResponse(response))
+      .map(response => {
+        return this.processResponse(response);
+      })
       .catch((error: Response | any) => {
         this.debug(error, 'put', url);
         return this.handleError(error);
@@ -103,8 +106,11 @@ export class HttpService extends Observable<ScmErrorList> {
   getPersistedObject(url: string, requestOptions = Authenticator.newRequestOptions()): Observable<Object> {
     return this.http.get(url, requestOptions)
       .timeout(HttpService.timeout, ScmErrors.httpError)
-      .map(response => this.processResponse(response))
+      .map(response => {
+        return this.processResponse(response);
+      })
       .catch((error: Response | any) => {
+        
         this.debug(error, 'get', url);
         return this.handleError(error);
       });
@@ -113,11 +119,26 @@ export class HttpService extends Observable<ScmErrorList> {
   deletePersistedObject(url: string, requestOptions = Authenticator.newRequestOptions()): Observable<Object> {
     return this.http.delete(url, requestOptions)
       .timeout(HttpService.timeout, ScmErrors.httpError)
-      .map(response => this.processResponse(response))
+      .map(response => {
+      })
       .catch((error: Response | any) => {
-        this.debug(error, 'delete', url);
-        return this.handleError(error);
+        if (error instanceof Response) {
+          let errors = <ScmErrorList>this.processResponse(error);
+          return Observable.throw(this.errorsAsString(errors));
+        }
+        else {
+          this.debug(error, 'delete', url);
+          return Observable.throw('Could not communicate with server');
+        }
       });
+  }
+
+  errorsAsString(errors: ScmErrorList): string {
+    let message = '';
+    for (let error of errors) {
+      message += (error.message + '\n');
+    }
+    return message;
   }
 
   private processResponse(response: Response): ScmErrorList | PersistedObject {
@@ -128,10 +149,10 @@ export class HttpService extends Observable<ScmErrorList> {
       errors = this.parseForErrors(obj);
     }
     catch (err) {
-        return new PersistedObject();
+        return obj;
     }
     if (errors.length > 0) {
-      throw errors;
+      return errors;
     }
     return obj;
   }
@@ -177,7 +198,7 @@ export class HttpService extends Observable<ScmErrorList> {
     else {
       errors.push({
         code: 'Unknown',
-        message: (<Object>error['error']).toString()
+        message: error['message']
       });
     }
     return errors;
