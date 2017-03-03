@@ -72,8 +72,7 @@ export class Metronome {
   play(exerciseSet: IExerciseSet, bpm: number, repititions: number, delaySeconds: number) {
     this.state = MetronomeState.Started;
     exerciseSet.initIterator();
-    let currentExercise: IExercise = exerciseSet.next();
-    if (currentExercise == null) {
+    if (exerciseSet.next()) {
       this.endExerciseSet.emit({});
       return;
     }
@@ -93,8 +92,8 @@ export class Metronome {
       nextStartTime += 1;
     }
     // Perform count-in
-    let beatCount = currentExercise.getNumberOfBeats();
-    let c = currentExercise;
+    let beatCount = exerciseSet.currentExercise.getNumberOfBeats();
+    let c = exerciseSet.currentExercise;
     let n = exerciseSet.nextExercise;
     this.schedule(nextStartTime - .01, this.audioBuffers.silence,
         () => this.startExercises.emit([c, n]));

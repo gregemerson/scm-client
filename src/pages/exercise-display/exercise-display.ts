@@ -7,13 +7,13 @@ import * as ES from '../../providers/exercise-sets/exercise-sets';
   styles: [
     `.exercise-canvas {
         z-index: 99;
-        border-style: dotted;
+        border-style: none;
         border-color: green;       
      }`,
     `.cursor-canvas {
         z-index: 100;
         position: absolute;
-        border-style: solid;
+        border-style: none;
         border-color: red;
      }`
   ],
@@ -23,7 +23,7 @@ import * as ES from '../../providers/exercise-sets/exercise-sets';
 export class ExerciseDisplay {
   @ViewChild("exerciseCanvas") canvasElement: ElementRef;
   @ViewChild("cursorCanvas") cursorElement: ElementRef; 
-  private exerciseFont = "px courier, monospace";
+  private exerciseFont = "px Poppins, monospace";
   private measureBar = '|';
   // Define the vertical placements of note component's bottom edge
   private topPaddingY: number;
@@ -62,6 +62,13 @@ export class ExerciseDisplay {
     let width = note == '' ? 0 : this.getTotalNoteWidth(note);
     this.noteWidths.push(lastWidth + width);
     return width;
+  }
+
+  private setArbitraryEndPosition(width: number): number {
+    let widths = this.noteWidths;
+    let lastWidth = (widths.length == 0) ? 0 : widths[widths.length - 1];
+    this.noteWidths.push(lastWidth + width + this.noteSpacing);
+    return width + this.noteSpacing;
   }
 
   private getTotalNoteWidth(note = this.genericNote): number {
@@ -178,12 +185,12 @@ export class ExerciseDisplay {
     textColor = 'rgba(0, 0, 0, 1)', baseLine = 'bottom') {
     this.setNoteFont();
     let context = this.getExerciseContext();
-    context.strokeStyle = textColor;
+    context.fillStyle = textColor;
     context.lineWidth = this.defaultLineWidth;
     context.textBaseline = baseLine;
     context.fillRect
     if (note != '') {
-      context.strokeText(note, x, y);
+      context.fillText(note, x, y);
     }
   }
 
@@ -304,7 +311,7 @@ export class ExerciseDisplay {
     this.accentPaddingY = this.accentY + (0.05 * fontSize);
     this.letterY = this.accentPaddingY + fontSize;
     this.groupingY = this.letterY + (0.3 * fontSize);
-    this.bottomPaddingY = this.groupingY + (0.1 * fontSize);
+    this.bottomPaddingY = this.groupingY + (0.3 * fontSize);
     this.lineHeight = this.bottomPaddingY;
     this.resetNoteX();
   }
@@ -359,8 +366,8 @@ export class ExerciseDisplay {
     let noteWidth = this.getNoteWidth('XX');
     let startX = this.noteX;
     let endX = startX + noteWidth;
-    let halfHeight = (this.letterY - this.topPaddingY)/2;
-    let verticalCenter = this.letterY - halfHeight;
+    let halfHeight = (this.groupingY - this.topPaddingY)/2;
+    let verticalCenter = this.groupingY - halfHeight;
     let horizontalCenter = startX + (endX - startX)/2;
     let context = this.getExerciseContext();
     // Draw divider
@@ -395,42 +402,29 @@ export class ExerciseDisplay {
   private drawMeasureSeparator(): number {
     let noteWidth = this.getNoteWidth();
     let context = this.getExerciseContext();
-    let middleX = this.noteX + (noteWidth/2);
+    let middleX = this.noteX + this.noteSpacing;
+    context.strokeStyle = 'black';
     context.lineWidth = noteWidth * 0.1;
     context.beginPath();
     context.moveTo(middleX, this.topPaddingY);
-    context.lineTo(middleX, this.letterY);
+    context.lineTo(middleX, this.groupingY);
     context.stroke();
     context.closePath();
-    return this.setNoteEndPosition();
+    return this.setArbitraryEndPosition(2 * this.noteSpacing);
   }
 
   private drawRest(noteChar: string, xPos: number) {
     let context = this.getExerciseContext();
+    context.textBaseline = '';
     context.strokeStyle = this.restFillColor;
-    context.strokeText('-', xPos, this.letterY)
-    /*
-    let restWidth = this.getNoteWidth(noteChar);
-    let restHeight =  this.selectedFontSize -
-
-      this.noteBottomSpacing - this.noteTopSpacing;
-    let centerX = xPos + (restWidth/2);
-    let centerY = ((this.letterY - this.noteBottomSpacing) + 
-      (this.accentPaddingY + this.noteTopSpacing))/2;
-    let radius = .8 * Math.min(restWidth/2, restHeight/2);
-    context.fillStyle = this.restFillColor;
-    context.beginPath();
-    context.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
-    context.fill();
-    context.closePath();
-    */
+    this.drawNoteFont('-', xPos, this.letterY);
   }
 
   private drawGroupLines(groupWidth: number, numNotes: number) {
     let topY = this.letterY - .2 * this.selectedFontSize;
     let context = this.getExerciseContext();
     context.textBaseline = 'middle';
-    context.strokeStyle = 'black';
+    context.strokeStyle = 'gray';
     let regionHeight = this.groupingY - topY;
     context.lineWidth = 0.1 * regionHeight;
     // Account for notes and note spacing

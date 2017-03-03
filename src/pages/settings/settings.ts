@@ -65,17 +65,17 @@ export class SettingsPage {
     if (this.authenticator.isGuest) {
       return;
     }
-    this.authenticator.saveSettings()
-      .subscribe({
-        next: () => {
+    this.authenticator.user.saveSettings()
+      .subscribe(
+        (result) => {
           this.messageItem.hide();
           this.isDirty = false;
           this.toaster.present('Settings saved successfully');
         },
-        error: (err: any) => {
+        (err: any) => {
           // err has type ScmError
           this.messageItem.show(err.message);
         }
-      })
+      )
   }
 }

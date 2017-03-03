@@ -4,6 +4,12 @@ import {NavController, NavParams} from 'ionic-angular';
 @Component({
   selector: 'warning',
   templateUrl: 'warning.html',
+  styles: [`
+    .warning-box {
+      max-height: 300px;
+      max-width: 500px;
+    }
+  `]
 })
 export class WarningPage {
   message: string;

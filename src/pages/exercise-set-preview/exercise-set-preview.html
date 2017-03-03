@@ -12,14 +12,14 @@
 <ion-content padding (window:resize)="onResize($event)" #actionsContent>
   <message-item isError="true"></message-item>
   <ion-fab #mainFab top center>
-    <button ion-fab color="secondary" [disabled]="editing" small>Actions</button>
+    <button ion-fab color="secondary" [disabled]="editing" mini>Actions</button>
     <ion-fab-list slide="bottom">
-      <button ion-button (click)="selectExerciseSet(mainFab)" [disabled]="editing" color="primary" round small>Select</button>
-      <button ion-button (click)="newExerciseSet(mainFab)" [hidden]="authenticator.isGuest" [disabled]="editing || exerciseSets.remainingExerciseSetCount == 0" color="primary" round small>New</button>
-      <button ion-button (click)="updateExerciseSetMetadata(mainFab)" [hidden]="!exerciseSet || !exerciseSet.isOwner" [disabled]="editing" color="primary" round small>Edit</button>
-      <button ion-button (click)="removeExerciseSet(mainFab)" [hidden]="!exerciseSet || !exerciseSet.isOwner" [disabled]="editing" color="danger" round small>Remove</button>
-      <button ion-button (click)="newExercise(mainFab)" [hidden]="!exerciseSet || !exerciseSet.isOwner || !exerciseSet.canAdd" [disabled]="editing" color="primary" round small>Exercise</button>
-      <button ion-button (click)="shareExerciseSet(mainFab)" [hidden]="!exerciseSet || authenticator.isGuest" [disabled]="editing" color="primary" round small>Share</button> 
+      <button ion-button (click)="selectExerciseSet(mainFab)" [disabled]="editing" color="primary" round small>Select Set</button>
+      <button ion-button (click)="newExerciseSet(mainFab)" [hidden]="authenticator.isGuest" [disabled]="editing || exerciseSets.remainingExerciseSetCount == 0" color="primary" round small>New Set</button>
+      <button ion-button (click)="updateExerciseSetMetadata(mainFab)" [hidden]="!exerciseSet || !exerciseSet.isOwner" [disabled]="editing" color="primary" round small>Edit Set</button>
+      <button ion-button (click)="removeExerciseSet(mainFab)" [hidden]="!exerciseSet || !exerciseSet.isOwner" [disabled]="editing" color="danger" round small>Remove Set</button>
+      <button ion-button (click)="newExercise(mainFab)" [hidden]="!exerciseSet || !exerciseSet.isOwner || !exerciseSet.canAdd" [disabled]="editing" color="primary" round small>New Exercise</button>
+      <button ion-button (click)="shareExerciseSet(mainFab)" [hidden]="!exerciseSet || authenticator.isGuest" [disabled]="editing" color="primary" round small>Share Set</button> 
     </ion-fab-list>
   </ion-fab>
 
@@ -30,11 +30,10 @@
 
   <ion-list>
     <ion-item *ngFor="let exercise of exercises; let idx = index">
-      <div [hidden]="editIndex == idx">
-        {{ (exercise.name ? exercise.name : '') +
-          (exercise.category ? (' (' + exercise.category + ')') : '')  +
-          (exercise.comments ? (': ' + exercise.comments) : '') }}
-      </div>
+      <ion-card [hidden]="editIndex == idx">
+          <ion-card-header color="primary">{{ exercise.name }}</ion-card-header>
+          <ion-card-content>{{ exercise.comments }}</ion-card-content>
+      </ion-card>
       <div #displayContainer class="exercise-container" [class.editing-on]="editIndex == idx">
         <exercise-display #exerciseDisplay></exercise-display>
       </div> 

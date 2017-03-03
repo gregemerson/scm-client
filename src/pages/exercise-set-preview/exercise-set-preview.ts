@@ -183,17 +183,6 @@ export class ExerciseSetPreviewPage {
           }
           exerciseSet.newExercise(formData).subscribe(
             (exerciseId: number) => {
-              let index = 0;
-              let exercise = null;
-              exerciseSet.initIterator();
-              while (exerciseSet.next() != null) {
-                if (exerciseSet.currentExercise.id == exerciseId) {
-                  exercise = exerciseSet.currentExercise;
-                  break;
-                }
-                index++;
-              }  
-              this.exercises.push(exercise);
               this.content.scrollToBottom();
               this.onSuccessfulOperations();
             },
@@ -240,11 +229,7 @@ export class ExerciseSetPreviewPage {
     if (!this.exerciseSets.currentExerciseSet) {
       return;
     }
-    this.exercises.length = 0;
-    this.exerciseSet.initIterator();
-    while (this.exerciseSet.next() != null) {
-      this.exercises.push(this.exerciseSet.currentExercise);
-    }
+    this.exercises = this.exerciseSets.currentExerciseSet.exercises;
   }
 
   private displayExercises(index = -1) {
@@ -372,15 +357,20 @@ export class ExerciseSetPreviewPage {
 
   removeExerciseSet(mainFab: any) {
     mainFab.close();
-    this.exerciseSets.removeCurrentExerciseSet().subscribe({
-      next: () => {
-        this.onSuccessfulOperations();
-        this.onChangedExerciseSet();
-      },
-      error: (err: any) => {
-        this.onFailedOperation(err);
+    this.modal.create(WarningPage, {
+      message: 'Do you want to permanantly delete this exercise set?',
+      okCallback:() => {
+        this.exerciseSets.removeCurrentExerciseSet().subscribe({
+          next: () => {
+            this.onSuccessfulOperations();
+            this.onChangedExerciseSet();
+          },
+          error: (err: any) => {
+          this.onFailedOperation(err);
+          }
+        });
       }
-    });
+    }).present();
   }
 
   setEditMode(editing: boolean, editIndex?: number) {

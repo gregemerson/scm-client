@@ -140,7 +140,7 @@ export class Authenticator {
       Authenticator.uidKey) + this.userLoadFilter;
     return this.httpService.getPersistedObject(url).
       map((user: Object) => {
-        this.setUser(new AuthUser(user));
+        this.setUser(new AuthUser(this.httpService, user));
         return this.user;
       });
   }
@@ -173,12 +173,6 @@ export class Authenticator {
     .map((res : any) => {
       return null;
     });
-  }
-
-  saveSettings(): Observable<void> {
-    return this.httpService.putPersistedObject(
-      HttpService.userSettings(this.user.id), this.user.settings)
-      .map(result => null);
   }
 }
 
@@ -216,6 +210,7 @@ export interface IAuthUser {
   emailVerified: boolean;
   rawExerciseSets: Array<Object>;
   subscription: Object;
+  saveSettings: () => Observable<Object>;
 }
 
 class AuthUser implements IAuthUser {
@@ -227,13 +222,20 @@ class AuthUser implements IAuthUser {
   emailVerified: boolean;
   rawExerciseSets: Array<Object>;
   subscription: Object;
+  httpService: HttpService;
   
-  constructor(rawUser: Object) {
+  constructor(httpService: HttpService, rawUser: Object) {
     Object.assign(this, rawUser);
     this.settings = new AuthUserSettings(rawUser['userSettings']);
     this.membershipEnds = new Date(rawUser['membershipExpiry']);
     this.rawExerciseSets = rawUser['exerciseSets'];
     this.subscription = rawUser['subscription'];
+    this.httpService = httpService;
+  }
+
+  saveSettings(): Observable<Object> {
+    return this.httpService.putPersistedObject(
+      HttpService.userSettings(this.settings.id), this.settings);
   }
 }
 

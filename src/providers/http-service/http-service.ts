@@ -26,8 +26,8 @@ export class HttpService extends Observable<ScmErrorList> {
   static exercise(exerciseId: number): string {
     return this.addRoot('Exercises/' + exerciseId.toString());
   }
-  static userSettings(userId: number): string {
-    return this.addRoot('Clients/' + userId.toString() + '/userSettings');
+  static userSettings(settingsId: number): string {
+    return this.addRoot('UserSettings/' + settingsId.toString());
   }
   static exerciseSetExercise(exerciseSetId: number, exerciseId: number): string {
     return this.addRoot('ExerciseSets/' + exerciseSetId.toString() + '/exercises/' + exerciseId.toString());
@@ -86,8 +86,7 @@ export class HttpService extends Observable<ScmErrorList> {
       .timeout(HttpService.timeout, ScmErrors.httpError)
       .map(response => this.processResponse(response))
       .catch((error: Response | any) => {
-        this.debug(error, 'post', url);
-        return this.handleError(error);
+        return this.processCatch(error, url);
       });
   }
 
@@ -98,9 +97,8 @@ export class HttpService extends Observable<ScmErrorList> {
         return this.processResponse(response);
       })
       .catch((error: Response | any) => {
-        this.debug(error, 'put', url);
-        return this.handleError(error);
-      }); 
+        return this.processCatch(error, url);
+      });
   }
   
   getPersistedObject(url: string, requestOptions = Authenticator.newRequestOptions()): Observable<Object> {
@@ -110,27 +108,27 @@ export class HttpService extends Observable<ScmErrorList> {
         return this.processResponse(response);
       })
       .catch((error: Response | any) => {
-        
-        this.debug(error, 'get', url);
-        return this.handleError(error);
+        return this.processCatch(error, url);
       });
   }
 
   deletePersistedObject(url: string, requestOptions = Authenticator.newRequestOptions()): Observable<Object> {
     return this.http.delete(url, requestOptions)
       .timeout(HttpService.timeout, ScmErrors.httpError)
-      .map(response => {
-      })
       .catch((error: Response | any) => {
-        if (error instanceof Response) {
-          let errors = <ScmErrorList>this.processResponse(error);
-          return Observable.throw(this.errorsAsString(errors));
-        }
-        else {
-          this.debug(error, 'delete', url);
-          return Observable.throw('Could not communicate with server');
-        }
+        return this.processCatch(error, url);
       });
+  }
+
+  private processCatch(error: Response | any, url: string): ErrorObservable {
+    if (error instanceof Response) {
+      let errors = <ScmErrorList>this.processResponse(error);
+      return Observable.throw(this.errorsAsString(errors));
+    }
+    else {
+      this.debug(error, 'delete', url);
+      return Observable.throw('Could not communicate with server');
+    }
   }
 
   errorsAsString(errors: ScmErrorList): string {
