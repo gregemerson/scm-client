@@ -44,7 +44,7 @@ export class Authenticator {
   }
   
   private setUser(user: IAuthUser) {
-    if (this._user != null && this._user.id == user.id) {
+    if (this._user != null && user != null && this._user.id == user.id) {
       return;
     }
     if (user == null) {
@@ -167,6 +167,7 @@ export class Authenticator {
     let uid = this.uid;
     this.setUser(null);
     if (uid == Config.guestUid) {
+      this.setUser(null);
       return Observable.of(null);
     } 
     return this.httpService.postPersistedObject(HttpService.logout(), {}, options)

@@ -12,7 +12,7 @@
 <ion-content padding (window:resize)="onResize($event)" #actionsContent>
   <message-item isError="true"></message-item>
   <ion-fab #mainFab top center>
-    <button ion-fab color="secondary" [disabled]="editing" mini>Actions</button>
+    <button ion-fab color="secondary" [disabled]="editing">Actions</button>
     <ion-fab-list slide="bottom">
       <button ion-button (click)="selectExerciseSet(mainFab)" [disabled]="editing" color="primary" round small>Select Set</button>
       <button ion-button (click)="newExerciseSet(mainFab)" [hidden]="authenticator.isGuest" [disabled]="editing || exerciseSets.remainingExerciseSetCount == 0" color="primary" round small>New Set</button>
@@ -31,8 +31,7 @@
   <ion-list>
     <ion-item *ngFor="let exercise of exercises; let idx = index">
       <ion-card [hidden]="editIndex == idx">
-          <ion-card-header color="primary">{{ exercise.name }}</ion-card-header>
-          <ion-card-content>{{ exercise.comments }}</ion-card-content>
+          <ion-card-content><span color="primary">{{ exercise.name }}</span>{{ (exercise.comments ? ': ' : '') + exercise.comments }}</ion-card-content>
       </ion-card>
       <div #displayContainer class="exercise-container" [class.editing-on]="editIndex == idx">
         <exercise-display #exerciseDisplay></exercise-display>

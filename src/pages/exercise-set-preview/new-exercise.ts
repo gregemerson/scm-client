@@ -26,7 +26,6 @@ export class NewExerciseForm {
       }
       this.newExercise = this.formBuilder.group({
         name: [defaults['name'], Validators.maxLength(this.constraints.maxNameLength)],
-        category: [defaults['category'], Validators.maxLength(this.constraints.maxCategoryLength)],
         comments: [defaults['comments'], Validators.maxLength(this.constraints.maxExerciseCommentsLength)],
       });
   }

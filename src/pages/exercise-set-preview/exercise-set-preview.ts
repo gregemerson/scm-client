@@ -39,7 +39,7 @@ export class ExerciseSetPreviewPage {
   @ViewChildren('displayContainer') contents: QueryList<ElementRef>;
   @ViewChild(MessageItem) errorDisplay: MessageItem;
   private fontFactor = 1.75;
-  private saveFields = ['notation', 'name', 'category', 'comments'];
+  private saveFields = ['notation', 'name', 'comments'];
   private loading: Loading;
 
   constructor(private navCtrl: NavController, 
@@ -76,6 +76,7 @@ export class ExerciseSetPreviewPage {
   }
 
   selectExerciseSet(mainFab: any) {
+    console.dir(this.exerciseSets.items)
     mainFab.close();
     this.modalCtrl.create(ExerciseSetSelectorPage,
       {
@@ -269,7 +270,6 @@ export class ExerciseSetPreviewPage {
   private createSnapshot(exercise: ES.IExercise): Object {
     return {
       name: exercise.name,
-      category:  exercise.category,
       comments: exercise.comments
     }
   }
@@ -297,9 +297,6 @@ export class ExerciseSetPreviewPage {
             fieldsToSave.push(field);
           }
           else {
-            if (field == 'category' && !exercise[field]) {
-              exercise[field] = 'Uncategorized';
-            }
             if (exercise[field] != snapShot[field]) {
               exercise[field] = snapShot[field];
               fieldsToSave.push(field);
@@ -332,7 +329,6 @@ export class ExerciseSetPreviewPage {
     let snapShot = this.editor.snapShot;
     exercise.name = snapShot['name'];
     exercise.comments = snapShot['comments'];
-    exercise.category = snapShot['category'];
     exercise.display.revertToSnapShot();
     draw();
     this.setEditMode(false);
@@ -511,7 +507,6 @@ export class ExerciseEditor {
     this.modal.create(NewExerciseForm, {
       create: (formData: Object) => {
         this.snapShot['name'] = formData['name'];
-        this.snapShot['category'] = formData['category'];
         this.snapShot['comments'] = formData['comments'];
       },
       initializer: this.snapShot

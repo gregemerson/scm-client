@@ -53,6 +53,7 @@ export class ExerciseSets {
   }
 
   load(user: IAuthUser): Observable<void> {
+    console.dir(user)
     this.user = user;
     this.currentExerciseSet = null;
     let currentId = user.settings.currentExerciseSet;
@@ -136,7 +137,7 @@ export class ExerciseSets {
           let newExerciseSetId = null;
           for (let index = 0; index < this.items.length; index++) {
             if (this.currentExerciseSet.id == this.items[index].id) {
-              this.items = this.items.splice(index, 1);
+              this.items.splice(index, 1);
               this.currentExerciseSet = null;
               if (this.items.length > 0) {
                 newExerciseSetId = this.items[0].id;
@@ -147,10 +148,13 @@ export class ExerciseSets {
         });
   }
 
-  public receiveExerciseSet(exerciseSetId: number) {
+  public receiveExerciseSet(exerciseSetId: number): Observable<void> {
     return this.httpService.getPersistedObject(HttpService.receiveExerciseSet(this.user.id, exerciseSetId))
     .map((receivedExerciseSet) => {
       this.items.push(new ExerciseSet(this.httpService, this.user, receivedExerciseSet));
+    })
+    .catch((error) => {
+      return Observable.throw(error);
     })
   }
   
@@ -333,7 +337,6 @@ class ExerciseSet implements IExerciseSet {
 export interface IExercise {
   id: number; 
   name: string;
-  category: string;
   display: ExerciseElements;
   comments: string;
   getNumberOfBeats(): number;
@@ -344,14 +347,12 @@ class Exercise implements IExercise {
   private _display: ExerciseElements;
   private _id: number;
   public name: string;
-  public category: string;
   public comments: string;
 
   constructor(rawExercise: Object) {
     this._display = <ExerciseElements>Encoding.decode(rawExercise['notation']);
     this._id = rawExercise['id'];
     this.name = rawExercise['name'];
-    this.category = rawExercise['category'];
     if (rawExercise.hasOwnProperty('comments')) {
       this.comments = rawExercise['comments'];
     }

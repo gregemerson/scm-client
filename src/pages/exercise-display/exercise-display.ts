@@ -210,6 +210,7 @@ export class ExerciseDisplay {
     let elementIndex = 0;
     let display = exercise.display;
     this.noteWidths = [];
+    let c = this.getExerciseContext();
     for (let lineIdx = 0; lineIdx < this.endOfLineIndices.length; lineIdx++) {
       this.noteWidths.push(this.noteSpacing);
       this.resetNoteX();
@@ -381,7 +382,7 @@ export class ExerciseDisplay {
     context.closePath();
     // Draw values
     context.strokeStyle = 'black';
-    let textHeight = 0.8 * halfHeight;
+    let textHeight = 0.7 * halfHeight;
     context.font = textHeight + this.exerciseFont;
     let top = repeat.numMeasures.toString();
     let bottom = repeat.numRepeats.toString()
