@@ -3,7 +3,7 @@ import {Http} from '@angular/http';
 import {Authenticator, IAuthUser} from '../../providers/authenticator/authenticator';
 import {HttpService} from '../../providers/http-service/http-service';
 import {Observable} from 'rxjs/Observable';
-import {Observer, Subject} from "rxjs";
+import {Observer, Subject, Subscription} from "rxjs";
 import {ErrorObservable} from 'rxjs/observable/ErrorObservable';
 import {Config} from '../../utilities/config';
 import {Constraints, ExerciseConstraints} from '../../utilities/constraints';
@@ -25,6 +25,7 @@ export class ExerciseSets {
   items: Array<IExerciseSet> = [];
   shared: Array<ISharedExerciseSet> = [];
   received: Array<ISharedExerciseSet> = [];
+  sharedListsSubscription: Subscription;
   
   constructor(private httpService: HttpService) {
   }
@@ -33,6 +34,7 @@ export class ExerciseSets {
     this.currentExerciseSet = null;
     this.user = null;
     this.items = null;
+    this.sharedListsSubscription.unsubscribe();
   }
 
   notifyOnReady(onReady: () => void) {
@@ -83,7 +85,7 @@ export class ExerciseSets {
   }
 
   loadShareLists(): Observable<void> {
-    return this.httpService.getPersistedObject(HttpService.shareLists(this.user.id, false))
+    return this.httpService.getPersistedObject(HttpService.shareLists(this.user.id))
     .map((result) => {
       // Load shared and received ExerciseSets
       let sharedList = result['lists']['shared'];
@@ -100,7 +102,7 @@ export class ExerciseSets {
   }
 
   pollExerciseSetSharing() {
-    Observable.interval(Constraints.ShareCheckInterval).
+    this.sharedListsSubscription = Observable.interval(Constraints.ShareCheckInterval).
       subscribe((value) => this.loadShareLists());
   }
 

@@ -1,7 +1,7 @@
 import {Component} from '@angular/core';
 import {NavController} from 'ionic-angular';
 import {Authenticator} from '../../providers/authenticator/authenticator'
-import {HomePage} from '../home/home'
+import {LoginPage} from '../login/login'
 
 @Component({
   selector: 'app-buttons',
@@ -14,9 +14,9 @@ export class AppButtons {
   }
 
   logout() {
+    this.navCtrl.push(LoginPage);
     this.authenticator.logout().subscribe({
       next: () => {
-        this.navCtrl.push(HomePage);
       },
       error: (err: any) => {
         console.dir(err);

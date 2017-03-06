@@ -45,13 +45,13 @@ export class HttpService extends Observable<ScmErrorList> {
     return this.addRoot('Clients/' + clientId.toString() + '/exerciseSets/rel/' + exerciseSetId);
   }
   static shareExerciseSet(clientId: number): string {
-    return this.addRoot('Clients/' + clientId.toString() + '/sharedExerciseSets');
+    return this.addRoot('Clients/' + clientId.toString() + '/shareExerciseSet');
   }
-  static shareLists(clientId: number, receivedOnly: boolean): string {
-    return this.addRoot('Clients/' + clientId.toString() + '/exerciseSetSharing/' + receivedOnly);
+  static shareLists(clientId: number): string {
+    return this.addRoot('Clients/' + clientId.toString() + '/exerciseSetSharing');
   }
   static receiveExerciseSet(clientId: number, exerciseSetId: number): string {
-    return this.addRoot('Clients/' + clientId + '/receivedExerciseSets/' + exerciseSetId);
+    return this.addRoot('Clients/' + clientId + '/receiveExerciseSet/' + exerciseSetId);
   }
 
   private debug(err: any, op: string, url: string) {
@@ -126,7 +126,7 @@ export class HttpService extends Observable<ScmErrorList> {
       return Observable.throw(this.errorsAsString(errors));
     }
     else {
-      this.debug(error, 'delete', url);
+      this.debug(error, 'xxxx', url);
       return Observable.throw('Could not communicate with server');
     }
   }

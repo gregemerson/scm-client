@@ -31,7 +31,7 @@ export class Authenticator {
   }
 
   get isGuest(): boolean {
-    return this.user.id == Config.guestUid;
+    return this.user ? this.user.id == Config.guestUid : false;
   }
 
   private saveUserSettings(): Observable<Object> {
