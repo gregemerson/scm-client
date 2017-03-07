@@ -34,5 +34,5 @@ export class SettingsConstraints {
 }
 
 export class Constraints {
-  static ShareCheckInterval = 1000 * 60 * 3;
+  static ShareCheckInterval = 1000 * 60 * 10;
 }

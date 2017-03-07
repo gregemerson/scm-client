@@ -27,12 +27,20 @@ export class GuidePage {
   accept(index: number) {
     this.exerciseSets.receiveExerciseSet(this.receivedExerciseSets[index].id)
       .subscribe(
-        () => {
+        () => { 
           this.receivedExerciseSets.splice(index, 1);
         },
         (error) => {
-          this.errorDisplay.show(error);
+          this.errorDisplay.show(error.message);
         }
       )
+  }
+
+  withdraw(index: number) {
+
+  }
+
+  reject(index: number) {
+    
   }
 }

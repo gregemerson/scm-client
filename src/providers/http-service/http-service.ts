@@ -53,6 +53,9 @@ export class HttpService extends Observable<ScmErrorList> {
   static receiveExerciseSet(clientId: number, exerciseSetId: number): string {
     return this.addRoot('Clients/' + clientId + '/receiveExerciseSet/' + exerciseSetId);
   }
+  static deleteShare(shareId: number): string {
+    return this.addRoot('SharedExerciseSets/' + shareId);
+  }
 
   private debug(err: any, op: string, url: string) {
     if (isDevMode()) {

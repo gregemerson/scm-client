@@ -36,7 +36,7 @@
           <button ion-button (click)="reject(idx)" color="danger" small item-left>
               <ion-icon name="trash"></ion-icon>
           </button>
-          {{ set.name }}
+          {{ set.name  + " - " + set.sharerName}}
         </ion-item>
       </ion-list>
 
@@ -46,7 +46,7 @@
           <button ion-button (click)="withdraw(idx)" color="danger" small item-left>
               <ion-icon name="trash"></ion-icon>
           </button>
-          {{ set.name }}
+          {{ set.name + " - " + set.receiverName}} 
         </ion-item>
       </ion-list>
 
