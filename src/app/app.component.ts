@@ -12,7 +12,7 @@ import {HomePage} from '../pages/home/home';
 import {SettingsPage} from '../pages/settings/settings';
 import {ExerciseSetPreviewPage} from '../pages/exercise-set-preview/exercise-set-preview';
 import {GuidePage} from '../pages/guide/guide';
-import {ScmErrors, ScmErrorList, IScmError} from '../utilities/errors';
+import {ScmErrors, ScmErrorList, ScmError} from '../utilities/errors';
 
 @Component({
   templateUrl: 'app.html',
@@ -93,7 +93,7 @@ export class StickControlMetronome {
       },
       error: (err: any) => {
         loading.dismiss();
-        // err of type IScmError
+        // err of type ScmError
         if (err.code == ScmErrors.NoLocalCredentials) {
           this.login();
         }
@@ -105,7 +105,7 @@ export class StickControlMetronome {
   }
 
   // Goto login page
-  private login(error: IScmError = null) {
+  private login(error: ScmError = null) {
     this.loginPushed = true;
     this.nav.push(LoginPage, {
       error: error

@@ -5,7 +5,7 @@ import {Config} from '../../utilities/config'
 import {Observable} from 'rxjs/Observable';
 import {ErrorObservable} from 'rxjs/observable/ErrorObservable';
 import {Observer, Subscriber, Subscription} from 'rxjs';
-import {ScmErrors, IScmError, ScmErrorList} from '../../utilities/errors';
+import {ScmErrors, ScmError, ScmErrorList} from '../../utilities/errors';
 import 'rxjs/add/operator/map';
 
 @Injectable()
@@ -87,8 +87,12 @@ export class HttpService extends Observable<ScmErrorList> {
   postPersistedObject(url: string,  data: any, requestOptions = Authenticator.newRequestOptions()): Observable<Object> {
     return this.http.post(url, data, requestOptions)
       .timeout(HttpService.timeout, ScmErrors.httpError)
-      .map(response => this.processResponse(response))
-      .catch((error: Response | any) => {
+      .map((response) => {
+        console.log('response is ')
+        console.dir(response)
+        return this.processResponse(response)
+      })
+      .catch((error: any) => {
         return this.processCatch(error, url);
       });
   }
@@ -99,7 +103,7 @@ export class HttpService extends Observable<ScmErrorList> {
       .map(response => {
         return this.processResponse(response);
       })
-      .catch((error: Response | any) => {
+      .catch((error: any) => {
         return this.processCatch(error, url);
       });
   }
@@ -110,7 +114,7 @@ export class HttpService extends Observable<ScmErrorList> {
       .map(response => {
         return this.processResponse(response);
       })
-      .catch((error: Response | any) => {
+      .catch((error: any) => {
         return this.processCatch(error, url);
       });
   }
@@ -118,20 +122,29 @@ export class HttpService extends Observable<ScmErrorList> {
   deletePersistedObject(url: string, requestOptions = Authenticator.newRequestOptions()): Observable<Object> {
     return this.http.delete(url, requestOptions)
       .timeout(HttpService.timeout, ScmErrors.httpError)
-      .catch((error: Response | any) => {
+      .map(response => {
+        return this.processResponse(response);
+      })
+      .catch((error: any) => {
         return this.processCatch(error, url);
       });
   }
 
-  private processCatch(error: Response | any, url: string): ErrorObservable {
+  private processCatch(error: any, url: string): ErrorObservable {
+    console.log('here are the errors ')
+    console.dir(error)
+    let errors: ScmErrorList;
     if (error instanceof Response) {
-      let errors = <ScmErrorList>this.processResponse(error);
-      return Observable.throw(this.errorsAsString(errors));
+      errors = <ScmErrorList>this.processResponse(error);
+    }
+    else if (error instanceof ScmErrorList) {
+      errors = error;
     }
     else {
-      this.debug(error, 'xxxx', url);
-      return Observable.throw('Could not communicate with server');
+      errors = new ScmErrorList();
+      errors.push(new ScmError('Unknown', 'Could not communicate with server'));
     }
+    return Observable.throw(this.errorsAsString(errors));
   }
 
   errorsAsString(errors: ScmErrorList): string {
@@ -153,13 +166,9 @@ export class HttpService extends Observable<ScmErrorList> {
         return obj;
     }
     if (errors.length > 0) {
-      return errors;
+      throw errors;
     }
     return obj;
-  }
-
-  private handleError (error: Response | any) {
-    return Observable.throw(ScmErrors.httpError);
   }
 
   private notifySubscribers(errors: ScmErrorList) {
@@ -170,37 +179,30 @@ export class HttpService extends Observable<ScmErrorList> {
 
   // @todo Need to check for status 200
   private parseForErrors(obj: Object): ScmErrorList {
-    let errors: ScmErrorList = [];
+    let errors: ScmErrorList = new ScmErrorList();
     if (!obj.hasOwnProperty('error')) {
-      return <[IScmError]>[];
+      return errors;
     }
     let error: Object = obj['error'];
     if (error.hasOwnProperty('code')) {
-      let code = error['code'];
       for (let globalCode in HttpService.AuthErrorCodes) {
-        if (globalCode == code) {
+        if (globalCode == error['code']) {
           errors.push(ScmErrors.authRequired);
           this.notifySubscribers(errors);
           return errors;
         }
       }
     }
-    // Do generic error parsing here
+    // Do generic error parsing
     if (error.hasOwnProperty('details') && error['details'].
         hasOwnProperty('messages')) {
       let messages = error['details']['messages'];
       for (let key in messages) {
-        errors.push({
-          code: key,
-          message: messages[key]
-        });
+        errors.push(new ScmError(key, messages[key]));
       }
     }
     else {
-      errors.push({
-        code: 'Unknown',
-        message: error['message']
-      });
+      errors.push(new ScmError('Unknown', error['message']));
     }
     return errors;
   }

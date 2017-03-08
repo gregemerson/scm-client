@@ -25,7 +25,7 @@ export class GuidePage {
   }
 
   accept(index: number) {
-    this.exerciseSets.receiveExerciseSet(this.receivedExerciseSets[index].id)
+    this.exerciseSets.receiveExerciseSet(index)
       .subscribe(
         () => { 
           this.receivedExerciseSets.splice(index, 1);
@@ -36,11 +36,12 @@ export class GuidePage {
       )
   }
 
-  withdraw(index: number) {
-
-  }
-
-  reject(index: number) {
-    
+  deleteShare(index: number, type: string) {
+    let share: ISharedExerciseSet = (type == 'shared') ? 
+      this.sharedExerciseSets[index] : this.receivedExerciseSets[index];
+    this.exerciseSets.deleteShare(share).subscribe(
+      () => {},
+      (error) => this.errorDisplay.show(error)
+    )
   }
 }

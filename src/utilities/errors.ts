@@ -5,38 +5,23 @@ export class ScmErrors {
     static NoLocalCredentials = "NO_LOCAL_CREDENTIALS";
     static AuthRequired = 'AUTHORIZATION_REQUIRED';
 
-    static get httpError(): IScmError {
-        return {
-            code: ScmErrors.HttpError,
-            message: 'Could not communicate with the server'
-        }
+    static get httpError(): ScmError {
+        return new ScmError(ScmErrors.HttpError, 'Could not communicate with the server');
     }
-
-    static get loginError(): IScmError {
-        return {
-            code: ScmErrors.LoginError,
-            message: 'Invalid credentials'
-        }
+    static get loginError(): ScmError {
+        return new ScmError(ScmErrors.LoginError, 'Invalid credentials');
     }
-
-    static get noLocalCredentials(): IScmError {
-        return {
-            code: ScmErrors.NoLocalCredentials,
-            message: ''
-        }
+    static get noLocalCredentials(): ScmError {
+        return new ScmError(ScmErrors.NoLocalCredentials, '');
     }
-
-    static get authRequired(): IScmError {
-        return {
-            code: ScmErrors.AuthRequired,
-            message: 'Log in required'
-        }
+    static get authRequired(): ScmError {
+        return new ScmError(ScmErrors.AuthRequired, 'Log in required');
     }
 }
 
-export interface IScmError {
-    code: string,
-    message: string
+export class ScmError {
+    constructor(public code: string, public message: string) {}
 }
 
-export type ScmErrorList = Array<IScmError>;
+export class ScmErrorList extends Array<ScmError> {
+}

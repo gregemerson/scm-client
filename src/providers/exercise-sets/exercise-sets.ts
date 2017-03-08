@@ -154,21 +154,38 @@ export class ExerciseSets {
         });
   }
 
-  public deleteShare(share: ISharedExerciseSet): Observable<Object> {
-    return this.httpService.deletePersistedObject(HttpService.deleteShare(share.shareId));
+  public deleteShare(share: ISharedExerciseSet): Observable<void> {
+    let shareContainer: ISharedExerciseSet[] = null;
+    let shareIndex = -1;
+    for (let i = 0; i < this.shared.length; i++) {
+      if (this.shared[i].shareId == share.shareId) {
+        shareContainer = this.shared;
+        shareIndex = i;
+      }
+    }
+    if (shareContainer == null) {
+      for (let i = 0; i < this.received.length; i++) {
+        if (this.received[i].shareId == share.shareId) {
+          shareContainer = this.received;
+          shareIndex = i;
+        }
+      }     
+    }
+    return this.httpService.deletePersistedObject(HttpService.deleteShare(share.shareId))
+      .map((result) => {
+        for (let i = 0; i < shareContainer.length; i++) {
+          shareContainer.splice(shareIndex, 1);
+        }
+      })
   }
 
-  public receiveExerciseSet(exerciseSetId: number): Observable<Object> {
+  public receiveExerciseSet(index: number): Observable<void> {
+    let exerciseSetId = this.received[index].id;
     return this.httpService.getPersistedObject(HttpService.receiveExerciseSet(this.user.id, exerciseSetId))
     .map((receivedExerciseSet) => {
-      if (receivedExerciseSet.hasOwnProperty('error')) {
-        return Observable.throw(receivedExerciseSet);
-      }
+      this.received.splice(index, 1);
       this.items.push(new ExerciseSet(this.httpService, this.user, receivedExerciseSet));
-    })
-    .catch((error) => {
-      return Observable.throw(error);
-    })
+    });
   }
   
   public setCurrentExerciseSet(exerciseSetId: number): Observable<void> {
@@ -202,7 +219,7 @@ export class ExerciseSets {
 }
 
 export interface ISharedExerciseSet {
-  id: number;
+  id: number; // of exercise set
   shareId: number;
   receiverId: number;
   receiverName: string;

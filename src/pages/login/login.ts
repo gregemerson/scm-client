@@ -4,7 +4,7 @@ import {Authenticator, IAuthUser} from '../../providers/authenticator/authentica
 import {Validators, FormBuilder, FormGroup, FormControl} from '@angular/forms';
 import {ScmValidators} from '../../utilities/scm-validators';
 import {MessageItem} from '../message-item/message-item';
-import {IScmError} from '../../utilities/errors';
+import {ScmError} from '../../utilities/errors';
 
 interface InvisibilityMap {
   menu: boolean,
@@ -51,7 +51,7 @@ export class LoginPage {
               private formBuilder: FormBuilder,
               private authenticator: Authenticator) {
 
-    let err = <IScmError>navParams.get('error');
+    let err = <ScmError>navParams.get('error');
     if (err) {
       console.log('in error handler')
       console.dir(err)
@@ -126,7 +126,7 @@ export class LoginPage {
     );
   }
 
-  private handleError(err: IScmError) {
+  private handleError(err: ScmError) {
     if (isDevMode()) {
       console.log(err);
     }

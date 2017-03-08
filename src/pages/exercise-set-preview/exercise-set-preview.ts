@@ -144,12 +144,10 @@ export class ExerciseSetPreviewPage {
           }
           this.exerciseSet.shareExerciseSet(initializer).subscribe(
             (result: Object) => {
-              if (result['share'].hasOwnProperty('error')) {
-                this.onFailedOperation(result['share'].error.message)
-              }
-              else {
-                this.onSuccessfulOperations('Shared with ' + initializer['receiverName']);
-              }
+              console.log('pushed object is ');
+              console.log(result)
+              this.exerciseSets.shared.push(<ES.ISharedExerciseSet>result);
+              this.onSuccessfulOperations('Shared with ' + initializer['receiverName']);
             },
             (err: any) => {
               this.onFailedOperation(err);
