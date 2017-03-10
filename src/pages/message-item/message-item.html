@@ -1,4 +1,6 @@
 
-
-<ion-item [hidden]="isHidden" [class.error-box]="isError">{{ message }}</ion-item>
+<ion-list [hidden]="isHidden">
+  <ion-list-header>{{ title }}</ion-list-header>
+  <ion-item [class.error-box]="isError">{{ message }}</ion-item>
+</ion-list>
 

@@ -181,7 +181,7 @@ export class ExerciseDisplay {
       selectedFontSize.toString() + this.exerciseFont;
   }
 
-  private drawNoteFont(note = '', x = -1, y =  -1, 
+  private drawNoteFont(note, x, y, 
     textColor = 'rgba(0, 0, 0, 1)', baseLine = 'bottom') {
     this.setNoteFont();
     let context = this.getExerciseContext();
@@ -449,7 +449,7 @@ export class ExerciseDisplay {
   drawAccent(x: number) {
     let context = this.getExerciseContext();
     let middleY = (this.topPaddingY + this.accentY)/2;
-    let accentWidth = .80 * this.getNoteWidth();
+    let accentWidth = .70 * this.getNoteWidth();
     context.lineWidth = .05 * this.selectedFontSize;
     context.beginPath();
     context.strokeStyle = "black";

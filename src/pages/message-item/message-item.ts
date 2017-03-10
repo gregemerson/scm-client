@@ -7,6 +7,7 @@ import {NavController, NavParams} from 'ionic-angular';
 })
 export class MessageItem {
   message = '';
+  title = '';
   @Input() isError = false;
   isHidden = true;
 
@@ -19,8 +20,9 @@ export class MessageItem {
     this.message = '';
   }
 
-  show(message: string) {
+  show(message: string, title = '') {
     this.isHidden = false;
     this.message = message;
+    this.title = title;
   }
 }

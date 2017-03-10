@@ -17,7 +17,8 @@ interface InvisibilityMap {
   templateUrl: 'login.html'
 })
 export class LoginPage {
-  @ViewChild(MessageItem) errorMessage: MessageItem;
+  @ViewChild('errorMsg') errorMessage: MessageItem;
+  @ViewChild('infoMsg') infoMessage: MessageItem;
   constraints = new ScmValidators();
   accountGroup: FormGroup;
   errorFontEm = .8;
@@ -106,7 +107,8 @@ export class LoginPage {
     this.authenticator.createUser(this.newEmailCtrl.value, 
       this.newPassword1Ctrl.value, this.newUsernameCtrl.value)
       .subscribe(
-      () => {
+      (message) => {
+        this.infoMessage.show(message['content'], message['title']);
         this.makeVisible('logIn');
       }, 
       (err: any) => {
