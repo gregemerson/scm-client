@@ -34,6 +34,8 @@ export class ExerciseSets {
     this.currentExerciseSet = null;
     this.user = null;
     this.items = null;
+    this.shared = null;
+    this.received = null;
     this.sharedListsSubscription.unsubscribe();
   }
 
@@ -87,6 +89,8 @@ export class ExerciseSets {
   loadShareLists(): Observable<Object> {
     return this.httpService.getPersistedObject(HttpService.shareLists(this.user.id))
     .map((result) => {
+      console.log('loading share lists ')
+      console.dir(result)
       if (result['lists'].hasOwnProperty('error')) {
         return Observable.throw(result['lists'].error.message)
       }

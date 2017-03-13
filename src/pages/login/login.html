@@ -6,7 +6,7 @@
 
 <ion-content padding>
   <ion-card>
-  <ion-card-header fancy-text>Welcome to Stick Control Metronome!</ion-card-header>
+  <ion-card-header fancy-text>Welcome to Stick-Ctrl Metronome!</ion-card-header>
   <ion-card-content>
     <ion-list [hidden]="invisibilityMap['menu']">
       <ion-item>
@@ -54,8 +54,8 @@
         <button ion-button (click)="makeVisible('menu')" color="danger"><ion-icon name="close-circle"></ion-icon></button>
       </ion-item>
     </form>
-    <message-item #errorMsg [isError]="true"></message-item>
-    <message-item #infoMsg [isError]="false"></message-item>
+    <message-item #errorMsg class="error-box" [isError]="true"></message-item>
+    <message-item #infoMsg class="info-box" [isError]="false"></message-item>
     </ion-card-content>
   </ion-card>
 </ion-content>

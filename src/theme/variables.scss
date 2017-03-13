@@ -39,6 +39,7 @@ $colors: (
   editing:    $c6,
   light:      $c5,
   dark:       $c7,
+  sky:        $c4,
   favorite:   #69BB7B,
   button1:    #63B249,
   button2:    #5AA243,
@@ -52,8 +53,13 @@ $fancy-font: 'Lemonada', cursive;
   font-size: .9em;
 }
 
+.info-box {
+  color: $c6 !important;
+  background-color: color($colors, sky) !important;
+}
+
 .error-box {
-  color: $background-color !important;
+  color: $c6 !important;
   background-color: color($colors, danger) !important;
 }
 

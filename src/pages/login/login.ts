@@ -4,7 +4,7 @@ import {Authenticator, IAuthUser} from '../../providers/authenticator/authentica
 import {Validators, FormBuilder, FormGroup, FormControl} from '@angular/forms';
 import {ScmValidators} from '../../utilities/scm-validators';
 import {MessageItem} from '../message-item/message-item';
-import {ScmError} from '../../utilities/errors';
+import {ScmErrorList, ScmError} from '../../utilities/errors';
 
 interface InvisibilityMap {
   menu: boolean,
@@ -22,6 +22,7 @@ export class LoginPage {
   constraints = new ScmValidators();
   accountGroup: FormGroup;
   errorFontEm = .8;
+  error: ScmError;
 
 
   // Current accounts
@@ -52,12 +53,7 @@ export class LoginPage {
               private formBuilder: FormBuilder,
               private authenticator: Authenticator) {
 
-    let err = <ScmError>navParams.get('error');
-    if (err) {
-      console.log('in error handler')
-      console.dir(err)
-      //this.handleError(err);
-    }
+    this.error = <ScmError>navParams.get('error');
 
     this.newUsernameCtrl = new FormControl('', [Validators.required, ScmValidators.userName]);
     this.newEmailCtrl = new FormControl('', [Validators.required, ScmValidators.email]);
@@ -71,6 +67,12 @@ export class LoginPage {
       newPassword1: this.newPassword1Ctrl,
       newPassword2: this.newPassword2Ctrl
     });
+  }
+
+  ngOnInit() {
+    if (this.error) {
+      this.handleError(this.error.message);
+    }
   }
 
   makeVisible(controlGroup: string) {
@@ -128,10 +130,7 @@ export class LoginPage {
     );
   }
 
-  private handleError(err: ScmError) {
-    if (isDevMode()) {
-      console.log(err);
-    }
-    this.errorMessage.show(err.message);  
+  private handleError(err: string) {
+    this.errorMessage.show(err);  
   }
 }

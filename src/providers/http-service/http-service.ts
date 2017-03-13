@@ -87,66 +87,69 @@ export class HttpService extends Observable<ScmErrorList> {
   postPersistedObject(url: string,  data: any, requestOptions = Authenticator.newRequestOptions()): Observable<Object> {
     return this.http.post(url, data, requestOptions)
       .timeout(HttpService.timeout, ScmErrors.httpError)
-      .map((response) => {
+      .flatMap((response) => {
         console.log('response is ')
         console.dir(response)
-        return this.processResponse(response)
+        return this.processResponse(response);
       })
-      .catch((error: any) => {
-        return this.processCatch(error, url);
+      .catch((err) => {
+        console.log('this was caught ' + (err instanceof ErrorObservable))
+        console.dir (err)
+        if (typeof err == 'string') {
+          return Observable.throw(err);
+        }
+        if (err instanceof ScmError) {
+          return Observable.throw(err.message);
+        }
+        if (err instanceof Response) {
+          let processed = this.processResponse(err);
+          if (processed instanceof ErrorObservable) {
+            return processed;
+          }
+          return Observable.throw('Could not communicate with server');
+        }
+        return Observable.throw(err.toString());
       });
   }
 
   putPersistedObject(url: string,  data: any, requestOptions = Authenticator.newRequestOptions()): Observable<Object> {
     return this.http.patch(url, data, requestOptions)
       .timeout(HttpService.timeout, ScmErrors.httpError)
-      .map(response => {
+      .flatMap(response => {
         return this.processResponse(response);
       })
-      .catch((error: any) => {
-        return this.processCatch(error, url);
+      .catch((err) => {
+        return Observable.throw('error caught' + err);
       });
   }
   
   getPersistedObject(url: string, requestOptions = Authenticator.newRequestOptions()): Observable<Object> {
     return this.http.get(url, requestOptions)
       .timeout(HttpService.timeout, ScmErrors.httpError)
-      .map(response => {
+      .flatMap(response => {
         return this.processResponse(response);
       })
-      .catch((error: any) => {
-        return this.processCatch(error, url);
+      .catch((err) => {
+        return Observable.throw('error caught' + err);
       });
   }
 
   deletePersistedObject(url: string, requestOptions = Authenticator.newRequestOptions()): Observable<Object> {
     return this.http.delete(url, requestOptions)
       .timeout(HttpService.timeout, ScmErrors.httpError)
-      .map(response => {
+      .flatMap(response => {
         return this.processResponse(response);
       })
-      .catch((error: any) => {
-        return this.processCatch(error, url);
+      .catch((err) => {
+        return Observable.throw('error caught  ' + err);
       });
   }
-
+/*
   private processCatch(error: any, url: string): ErrorObservable {
-    console.log('here are the errors ')
-    console.dir(error)
-    let errors: ScmErrorList;
-    if (error instanceof Response) {
-      errors = <ScmErrorList>this.processResponse(error);
-    }
-    else if (error instanceof ScmErrorList) {
-      errors = error;
-    }
-    else {
-      errors = new ScmErrorList();
-      errors.push(new ScmError('Unknown', 'Could not communicate with server'));
-    }
-    return Observable.throw(this.errorsAsString(errors));
+    //@todo logging
+    return Observable.throw('Could not communicate with server');
   }
-
+*/
   errorsAsString(errors: ScmErrorList): string {
     let message = '';
     for (let error of errors) {
@@ -155,20 +158,21 @@ export class HttpService extends Observable<ScmErrorList> {
     return message;
   }
 
-  private processResponse(response: Response): ScmErrorList | PersistedObject {
-    let obj: PersistedObject;
+  private processResponse(response: Response): ErrorObservable | Observable<Object> {
+    let obj: Object = {};
     let errors: ScmErrorList = [];
     try {
       obj = <Object>response.json();
       errors = this.parseForErrors(obj);
     }
     catch (err) {
-        return obj;
     }
+    console.log('errors found ' + this.errorsAsString(errors))
+    console.dir(errors)
     if (errors.length > 0) {
-      throw errors;
+      return Observable.throw(this.errorsAsString(errors));
     }
-    return obj;
+    return Observable.of(obj);
   }
 
   private notifySubscribers(errors: ScmErrorList) {
@@ -177,7 +181,6 @@ export class HttpService extends Observable<ScmErrorList> {
     }
   }
 
-  // @todo Need to check for status 200
   private parseForErrors(obj: Object): ScmErrorList {
     let errors: ScmErrorList = new ScmErrorList();
     if (!obj.hasOwnProperty('error')) {

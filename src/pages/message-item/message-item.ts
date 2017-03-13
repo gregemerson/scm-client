@@ -24,5 +24,6 @@ export class MessageItem {
     this.isHidden = false;
     this.message = message;
     this.title = title;
+    console.log('here is message ' + message)
   }
 }
