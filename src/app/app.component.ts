@@ -28,8 +28,6 @@ export class StickControlMetronome {
   ];
   rootPage: any = GuidePage;
   @ViewChild(Nav) nav: Nav;
-  @ViewChild(GuidePage) guide: GuidePage;
-  @ViewChild(SettingsPage) settings: SettingsPage;
 
   loginPushed = false;
   servicesLoaded = false;

@@ -88,13 +88,9 @@ export class HttpService extends Observable<ScmErrorList> {
     return this.http.post(url, data, requestOptions)
       .timeout(HttpService.timeout, ScmErrors.httpError)
       .flatMap((response) => {
-        console.log('response is ')
-        console.dir(response)
         return this.processResponse(response);
       })
       .catch((err) => {
-        console.log('this was caught ' + (err instanceof ErrorObservable))
-        console.dir (err)
         if (typeof err == 'string') {
           return Observable.throw(err);
         }
@@ -167,8 +163,6 @@ export class HttpService extends Observable<ScmErrorList> {
     }
     catch (err) {
     }
-    console.log('errors found ' + this.errorsAsString(errors))
-    console.dir(errors)
     if (errors.length > 0) {
       return Observable.throw(this.errorsAsString(errors));
     }
