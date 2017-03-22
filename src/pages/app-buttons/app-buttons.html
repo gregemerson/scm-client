@@ -1,6 +1,7 @@
 
 <ion-buttons end>
   <button ion-button color="secondary" clear>{{ authenticator.user?.username }}</button>
+  <button ion-button (click)="subscription()">Subscription</button>
   <button ion-button (click)="help()">
     <ion-icon name="help"></ion-icon>
   </button>

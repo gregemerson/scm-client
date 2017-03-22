@@ -84,61 +84,65 @@ export class HttpService extends Observable<ScmErrorList> {
     return Config.apiRoot + relUrl;
   }
 
+  private catchError(err: any): ErrorObservable<string> {
+      if (typeof err == 'string') {
+        return Observable.throw(err);
+      }
+      if (err instanceof ScmError) {
+        return Observable.throw(err.message);
+      }
+      if (err instanceof Response) {
+        let processed = this.processResponse(err);
+        if (processed instanceof ErrorObservable) {
+          return processed;
+        }
+        return Observable.throw('Could not communicate with server');
+      }
+      return Observable.throw(err.toString());
+  }
+
   postPersistedObject(url: string,  data: any, requestOptions = Authenticator.newRequestOptions()): Observable<Object> {
     return this.http.post(url, data, requestOptions)
-      .timeout(HttpService.timeout, ScmErrors.httpError)
+      .timeout(HttpService.timeout)
       .flatMap((response) => {
         return this.processResponse(response);
       })
       .catch((err) => {
-        if (typeof err == 'string') {
-          return Observable.throw(err);
-        }
-        if (err instanceof ScmError) {
-          return Observable.throw(err.message);
-        }
-        if (err instanceof Response) {
-          let processed = this.processResponse(err);
-          if (processed instanceof ErrorObservable) {
-            return processed;
-          }
-          return Observable.throw('Could not communicate with server');
-        }
-        return Observable.throw(err.toString());
+        return this.catchError(err);
       });
   }
 
   putPersistedObject(url: string,  data: any, requestOptions = Authenticator.newRequestOptions()): Observable<Object> {
     return this.http.patch(url, data, requestOptions)
-      .timeout(HttpService.timeout, ScmErrors.httpError)
+      .timeout(HttpService.timeout)
       .flatMap(response => {
         return this.processResponse(response);
       })
       .catch((err) => {
-        return Observable.throw('error caught' + err);
+        return this.catchError(err);
       });
   }
   
   getPersistedObject(url: string, requestOptions = Authenticator.newRequestOptions()): Observable<Object> {
     return this.http.get(url, requestOptions)
-      .timeout(HttpService.timeout, ScmErrors.httpError)
+      .timeout(HttpService.timeout)
       .flatMap(response => {
         return this.processResponse(response);
       })
       .catch((err) => {
-        return Observable.throw('error caught' + err);
+        return this.catchError(err);
       });
   }
 
   deletePersistedObject(url: string, requestOptions = Authenticator.newRequestOptions()): Observable<Object> {
     return this.http.delete(url, requestOptions)
-      .timeout(HttpService.timeout, ScmErrors.httpError)
+      .timeout(HttpService.timeout)
       .flatMap(response => {
         return this.processResponse(response);
       })
       .catch((err) => {
-        return Observable.throw('error caught  ' + err);
-      });
+        return this.catchError(err);
+      });;
   }
 /*
   private processCatch(error: any, url: string): ErrorObservable {
@@ -154,7 +158,7 @@ export class HttpService extends Observable<ScmErrorList> {
     return message;
   }
 
-  private processResponse(response: Response): ErrorObservable | Observable<Object> {
+  private processResponse(response: Response): ErrorObservable<string> | Observable<Object> {
     let obj: Object = {};
     let errors: ScmErrorList = [];
     try {

@@ -23,4 +23,12 @@ export class AppButtons {
       }
     });
   }
+
+  help() {
+    alert('not implemented')
+  }
+
+  subscription() {
+    
+  }
 }
